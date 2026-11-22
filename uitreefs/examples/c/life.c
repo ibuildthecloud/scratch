@@ -2,16 +2,18 @@
  * life: Conway's Game of Life on a canvas, as a 9front C client.
  * Click cells to toggle them, Run to animate, Step, Random and Clear.
  *
- *	gpuifs -t Life --root $H9ROOT rc -c 'mk install && ./life'
+ *	uitreefs -t Life --root $H9ROOT rc -c 'mk install && ./life'
  *
  * (The built-in root has no compiler, so this builds in a full 9front
  * tree; the built binary then runs on --root builtin.)
  *
- * Shows: a C client with libc's own tokenize(2) for event lines and
- * bio(2) for an 8 KiB events reader, a second process sharing memory
- * (rfork RFMEM) for the event loop, the whole board written as one ops
- * file per generation, mouse_down x= y= mapped to cells, button labels
- * changed from C.   Needs: M4
+ * Shows: a C client with libc's own tokenize(2) for event lines, where
+ * w[0] is the event and w[1] its key (a button's tag or a key's action:
+ * the same word either way), bio(2) for the events reader, a second
+ * process sharing memory (rfork RFMEM) for the event loop, the whole
+ * board written as one ops file per generation, mouse_down x= y= mapped
+ * to cells, a button's label and icon changed with one set line.
+ * Needs: M4
  */
 #include <u.h>
 #include <libc.h>
@@ -22,8 +24,8 @@ enum {
 	Cell = 12,	/* pixels per cell */
 };
 
-char *k = "/mnt/gpui";
-char *board = "windows/main/root/board";
+char *ui = "/mnt/ui";
+char *board = "win/main/board";
 uchar grid[N][N];
 int running;
 int dirty = 1;
@@ -36,7 +38,7 @@ put(char *file, char *fmt, ...)
 	va_list arg;
 	int fd, n;
 
-	snprint(path, sizeof path, "%s/%s", k, file);
+	snprint(path, sizeof path, "%s/%s", ui, file);
 	va_start(arg, fmt);
 	s = vsmprint(fmt, arg);
 	va_end(arg);
@@ -96,7 +98,7 @@ attr(char **w, int n, char *name)
 	int i, l;
 
 	l = strlen(name);
-	for(i = 1; i < n; i++)
+	for(i = 3; i < n; i++)
 		if(strncmp(w[i], name, l) == 0 && w[i][l] == '=')
 			return w[i]+l+1;
 	return "";
@@ -110,26 +112,23 @@ events(void)
 	char *line, *w[32], *what;
 	int n, x, y, fd;
 
-	if((fd = open(smprint("%s/events", k), OREAD)) < 0)
+	if((fd = open(smprint("%s/events", ui), OREAD)) < 0)
 		sysfatal("events: %r");
-	b = Bfdopen(fd, OREAD);		/* Bfdopen's buffer is 8 KiB */
+	b = Bfdopen(fd, OREAD);
 	while((line = Brdstr(b, '\n', 1)) != nil){
-		n = tokenize(line, w, nelem(w));
-		if(n == 0){
+		n = tokenize(line, w, nelem(w));	/* name key path attr=value... */
+		if(n < 3){
 			free(line);
 			continue;
 		}
 		qlock(&lk);
-		/* a button's tag and a key's action name are the same words */
+		/* a button's tag and a key's action are the same word, w[1] */
 		what = "";
-		if(strcmp(w[0], "click") == 0)
-			what = attr(w, n, "tag");
-		else if(strcmp(w[0], "action") == 0)
-			what = attr(w, n, "id");
+		if(strcmp(w[0], "click") == 0 || strcmp(w[0], "action") == 0)
+			what = w[1];
 		if(strcmp(what, "run") == 0){
 			running = !running;
-			put("windows/main/root/bar/run/label", running ? "Pause" : "Run");
-			put("windows/main/root/bar/run/icon", running ? "pause" : "play");
+			put("win/main/ctl", running ? "set bar/run label=Pause icon=pause" : "set bar/run label=Run icon=play");
 		}else if(strcmp(what, "step") == 0){
 			step();
 			dirty = 1;
@@ -148,8 +147,7 @@ events(void)
 				grid[y][x] ^= 1;
 				dirty = 1;
 			}
-		}else if(strcmp(w[0], "close") == 0 || strcmp(w[0], "quit") == 0)
-			put("ctl", "quit");
+		}
 		qunlock(&lk);
 		free(line);
 	}
@@ -163,20 +161,20 @@ main(int argc, char **argv)
 
 	ARGBEGIN{
 	}ARGEND
-	if((env = getenv("gpuifs")) != nil && *env)
-		k = env;
+	if((env = getenv("ui")) != nil && *env)
+		ui = env;
 	srand(time(0));
 
-	put("ctl", "window main title=Life size=%d,%d resizable=off pos=center", N*Cell+32, N*Cell+96);
-	put("windows/main/root/tree",
-		"div root  style='v_flex size_full items_center gap=12 p=16 bg=background'\n"
+	put("win/main/ctl", "set . title=Life size=%d,%d resizable=off pos=center", N*Cell+32, N*Cell+96);
+	put("win/main/tree",
+		"div root  : v_flex size_full items_center gap=12 p=16 bg=background\n"
 		"  toolbar bar\n"
-		"    button run  label=Run  icon=play  style=primary  tag=run\n"
-		"    button step  label=Step  style=outline  tag=step\n"
-		"    button random  label=Random  style=ghost  tag=random\n"
-		"    button clear  label=Clear  style=ghost  tag=clear\n"
-		"  canvas board  style='size=%d rounded_md'  on=mouse_down\n", N*Cell);
-	put("keymap", "space run\nright step\nr random\nbackspace clear\n");
+		"    button run  label=Run  icon=play  tag=run  : primary\n"
+		"    button step  label=Step  tag=step  : outline\n"
+		"    button random  label=Random  tag=random  : ghost\n"
+		"    button clear  label=Clear  tag=clear  : ghost\n"
+		"  canvas board  on=mouse_down  : size=%d rounded_md\n", N*Cell);
+	put("keys", "space run\nright step\nr random\nbackspace clear\n");
 
 	/* a glider to start */
 	grid[1][2] = grid[2][3] = grid[3][1] = grid[3][2] = grid[3][3] = 1;

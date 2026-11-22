@@ -1,44 +1,46 @@
 # counter.sed: a counter in pure sed, with the count in Roman numerals.
 #
-#	gpuifs -t Counter rc -c "echo 'window main title=Counter size=420,240' >/mnt/gpui/ctl; sed -nuf counter.sed /mnt/gpui/events"
+#	uitreefs -t Counter sed -nuf counter.sed /mnt/ui/events
 #
 # The sed is 9front's, running in the h9 machine, so the regular
 # expressions are egrep-style: ( ) group, \1 refers back.
 #
 # sed reads the app's events file as its input, one event per line, keeps
 # the count in the hold space, does the arithmetic with substitutions, and
-# writes the screen to the root node's ctl with w. -u flushes the w files
-# before each read, so every event's output is one write, which the ctl
-# file applies as one atomic change. sed opens its w files when it starts,
-# so the window must exist first: that is the one rc echo in the launch.
+# writes to the main window's ctl with w. -u flushes the w files before
+# each read, so every event's output is one write, which the ctl file
+# applies as one atomic change. The main window and its ctl exist before
+# any client runs, so sed opens them itself: the launch is just sed.
 #
-# The screen is re-rendered on every change: delete the five nodes, make
-# them again in order. sed has only the root ctl, so it can't reach a
-# child's text file, and new always appends to the order.
+# The screen is made once, on the first line. After that each change is
+# two set lines: the count and its Roman numeral.
 
-# Line 1 is resync seq=N: set the count to 0, bind keys, style the root.
+# Line 1 is resync - - seq=N: bind keys, make the screen, count 0.
 1{
 	s/.*/=	inc\
 -	dec\
 0	reset\
 escape	quit/
-	w /mnt/gpui/keymap
-	s/(.|\n)*/h_flex flex_wrap size_full p=24 gap_x=16 gap_y=8 items_center justify_center content_center bg=background/
-	w /mnt/gpui/windows/main/root/style
+	w /mnt/ui/keys
+	s/(.|\n)*/set . title=Counter size=420,240 : h_flex flex_wrap size_full p=24 gap_x=16 gap_y=8 items_center justify_center content_center bg=background\
+new button dec label=− tag=dec : lg w=64\
+new text n text=0 : text_size=52 font_bold text_center w=176\
+new button inc label=+ tag=inc : lg primary w=64\
+new text roman text=nulla : w_full text_center text_2xl text_color=muted_foreground font_family=C059\
+new button reset label=Reset tag=reset : ghost sm/
+	w /mnt/ui/win/main/ctl
 	s/.*/0/
-	b render
+	h
+	d
 }
 
-# Which event: put the count in the pattern space and jump.
-/^click .*tag=inc/b inc
-/^action .*id=inc/b inc
-/^click .*tag=dec/b dec
-/^action .*id=dec/b dec
-/^click .*tag=reset/b reset
-/^action .*id=reset/b reset
-/^action .*id=quit/q
-/^close /q
-/^quit /q
+# Which event: the name and key are the first two words, so a button's
+# click and its key's action are one address. Closing the window quits the
+# app, which ends the events file and so ends sed.
+/^(click|action) inc /b inc
+/^(click|action) dec /b dec
+/^(click|action) reset /b reset
+/^action quit /q
 d
 
 :reset
@@ -216,18 +218,9 @@ x
 }
 x
 :out
-# Pattern: the Roman numeral. Hold: the count. Join them as "roman\ncount".
+# Pattern: the Roman numeral. Hold: the count. Two set lines, one write.
 G
-s/^(.*)\n(.*)$/new button dec label=− tag=dec style='lg w=64'\
-new text n text=\2 style='text_size=52 font_bold text_center w=176'\
-new button inc label=+ tag=inc style='lg primary w=64'\
-new text roman text='\1' style='w_full text_center text_2xl text_color=muted_foreground font_family=C059'\
-new button reset label=Reset tag=reset style='ghost sm'/
-1!s/^/delete dec\
-delete n\
-delete inc\
-delete roman\
-delete reset\
-/
-w /mnt/gpui/windows/main/root/ctl
+s/^(.*)\n(.*)$/set n text=\2\
+set roman text='\1'/
+w /mnt/ui/win/main/ctl
 g

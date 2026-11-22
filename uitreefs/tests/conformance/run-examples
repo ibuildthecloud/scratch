@@ -55,6 +55,8 @@ list | while IFS='|' read -r name dir cmd flags; do
 	# shellcheck disable=SC2086
 	"$uitreefs" --headless rc tests/conformance/tree-phase.rc "$dir" $cmd 2>"$out.trace" |
 		sed 's/\([^0-9]\)[0-9][0-9]:[0-9][0-9]\([^0-9]\|$\)/\1HH:MM\2/g' >"$out"
+	# Writes the tree refused are loud on uitreefs's stderr: count them with the example's.
+	grep '^uitree: ' "$out.trace" >>"$out"
 	if [ "${flags:-}" = nogolden ]; then
 		if sed -n '/^-- stderr$/,$p' "$out" | sed 1d | grep -q . || ! grep -q '^-- window' "$out"; then
 			echo "FAIL $name"; sed -n '/^-- stderr$/,$p' "$out" | sed 's/^/	/'

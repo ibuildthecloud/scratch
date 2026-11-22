@@ -2,7 +2,7 @@
 # paint.rc: a finger-painting program on a canvas. Pick a color and a
 # brush, drag to draw, undo, clear, save and load the drawing.
 #
-#	gpuifs -t Paint rc paint.rc
+#	uitreefs -t Paint rc paint.rc
 #
 # Shows: canvas ops as a retained display list, one short ctl write per
 # stroke segment (add path ...), coalesced drag events with x= y=, del for
@@ -10,11 +10,10 @@
 # colors as theme tokens so a drawing follows dark mode.   Needs: M4
 . ./lib.rc
 
-echo 'window main title=Paint size=900,640 min=500,400 pos=center' >$k/ctl
-w=$k/windows/main
-r=$w/root
-cat >$r/tree <<'END'
-div root  style='v_flex size_full bg=background'
+m=$ui/win/main
+echo 'set . title=Paint size=900,640 min=500,400 pos=center' >$m/ctl
+cat >$m/tree <<'END'
+div root  : v_flex size_full bg=background
   toolbar bar
     button-group color  value=foreground  tag=color
       button foreground  label=Ink
@@ -22,21 +21,21 @@ div root  style='v_flex size_full bg=background'
       button danger  label=Red
       button success  label=Green
       button warning  label=Amber
-    separator s1  dir=v
-    slider size  min=1  max=24  value=4  style=w=140  tag=size
-    separator s2  dir=v
-    button undo  icon=undo  style='ghost sm'  tag=undo  tooltip='Undo (cmd-z)'
-    button clear  icon=trash  style='ghost sm'  tag=clear  tooltip=Clear
+    separator s1  dir=col
+    slider size  min=1  max=24  value=4  tag=size  : w=140
+    separator s2  dir=col
+    button undo  icon=undo  tag=undo  tooltip='Undo (cmd-z)'  : ghost sm
+    button clear  icon=trash  tag=clear  tooltip=Clear  : ghost sm
     spacer sp
-    button load  label=Open  style='ghost sm'  tag=load
-    button save  label=Save  style='outline sm'  tag=save
-  canvas c  style='flex_1 cursor_crosshair'  on='mouse_down mouse_up drag'
+    button load  label=Open  tag=load  : ghost sm
+    button save  label=Save  tag=save  : outline sm
+  canvas c  on='mouse_down mouse_up drag'  : flex_1 cursor_crosshair
 END
-C=$r/c
+C=$m/c
 file=drawing.ops
 echo 'cmd-z undo
 cmd-s save
-cmd-o load' >$k/keymap
+cmd-o load' >$ui/keys
 
 fn blank { echo 'rect bg 0 0 4000 4000 fill=background' >$C/ops }
 blank
@@ -46,7 +45,7 @@ n=0
 strokes=()		# ids of the segments of each stroke, for undo
 last=()
 
-cat $k/events | while(ev=`{read}){
+cat $ui/events | while(ev=`{read}){
 	switch($ev(1)){
 	case mouse_down
 		x=`{attr x}; y=`{attr y}
@@ -67,11 +66,12 @@ cat $k/events | while(ev=`{read}){
 	case mouse_up
 		last=()
 	case change
-		if(has 'tag=color') color=`{attr value}
-		if(has 'tag=size') size=`{attr value}
+		switch($ev(2)){
+		case color; color=`{attr value}
+		case size;  size=`{attr value}
+		}
 	case click action
-		x=`{attr tag; attr id}
-		switch($"x){
+		switch($ev(2)){
 		case undo
 			if(! ~ $#strokes 0){
 				s=$strokes($#strokes)
@@ -83,12 +83,10 @@ cat $k/events | while(ev=`{read}){
 			strokes=()
 		case save
 			cat $C/ops >$file
-			echo 'notify ''Saved '$file''' type=success' >$w/ctl
+			echo 'notify ''Saved '$file''' type=success' >$m/ctl
 		case load
 			if(test -f $file) cat $file >$C/ops
 			strokes=()
 		}
-	case *
-		stdquit
 	}
 }

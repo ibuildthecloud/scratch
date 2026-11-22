@@ -1,86 +1,78 @@
 #!/bin/rc
 # notes.rc: the design doc's complete client, a notes app. A searchable
-# list of notes, a markdown editor, a toolbar, a keymap and a File menu.
+# list of notes, a markdown editor, a toolbar, key bindings and a File menu.
 # Notes are files in $home/notes.
 #
-#	gpuifs -t Notes rc notes.rc
+#	uitreefs -t Notes rc notes.rc
 #
-# This is DESIGN.md § A complete client, with the fixes the plan's design
-# questions call for: the events loop pipes through cat, tags are matched
-# as whole words, a new note gets selected, and deleting asks first.
+# This is DESIGN.md § A complete client, plus a new note being selected
+# and deleting asking first. Buttons, keys and menu items share keys
+# (save, new, del), so the loop switches on the event's first two words.
 # Needs: M3
 . ./lib.rc
+m=$ui/win/main
 
 n=$home/notes
 mkdir -p $n >[2]/dev/null
 
-echo 'window main title=Notes size=900,600 min=600,400' >$k/ctl
-w=$k/windows/main
-
-cat >$w/root/tree <<'END'
-div root  style='h_flex items_stretch size_full'
-  div nav  style='v_flex w=220 border_r_1 border_color=border'
-    list notes  searchable=on  selectable=on  tag=pick
-  div page  style='v_flex flex_1'
+echo 'set . title=Notes size=900,600 min=600,400' >$m/ctl
+cat >$m/tree <<'END'
+div root  : h_flex items_stretch size_full
+  div nav  : v_flex w=220 border_r_1 border_color=border
+    list notes  searchable  selectable  tag=pick
+  div page  : v_flex flex_1
     toolbar bar
-      button save  label=Save  icon=check  style='ghost sm'  tag=save
-      button del   label=Delete  icon=trash  style='ghost sm danger'  tag=del
-    editor body  style=flex_1  language=markdown  soft_wrap=on
+      button save  label=Save  icon=check  tag=save  : ghost sm
+      button del   label=Delete  icon=trash  tag=del  : ghost sm danger
+    editor body  soft_wrap  language=markdown  : flex_1
 END
 
 echo 'cmd-s save
 cmd-n new
-cmd-backspace del' >$k/keymap
+cmd-backspace del' >$ui/keys
 echo 'item new label=New key=cmd-n
 item save label=Save key=cmd-s
 sep
 item del label=Delete… key=cmd-backspace
 sep
-item quit label=Quit key=cmd-q' >$k/menus/File
-echo 'new alert-dialog sure title=''Delete this note?'' confirm=Delete cancel=Keep variant=danger tag=sure' >$w/overlays/ctl
+item quit label=Quit key=cmd-q' >$ui/menu/File
+echo 'new alert-dialog sure title=''Delete this note?'' confirm=Delete cancel=Keep variant=danger tag=sure' >$m/over/ctl
 
-L=$w/root/nav/notes
-B=$w/root/page/body
-fn refresh { ls -p $n | awk '{ print $0 "\t" $0 "\ticon=file-text" }' >$L/items }
+# Item lines from awk are tab-separated, which works unchanged.
+fn refresh { ls -p $n | awk '{ print $0 "\t" $0 "\ticon=file-text" }' >$m/nav/notes/items }
 refresh
 cur=()
 
 fn pick {
 	cur=$1
-	echo $cur >$L/value
-	cat $n/$cur >$B/value
-	echo $cur' — Notes' >$w/title
+	echo $cur >$m/nav/notes/value
+	cat $n/$cur >$m/page/body/value
+	echo $cur' — Notes' >$m/title
 }
 
-cat $k/events | while(ev=`{read}){
-	x=`{attr tag; attr id}
-	switch($ev(1)){
-	case select
-		if(has 'tag=pick') pick `{attr value}
-	case click action
-		switch($"x){
-		case save
-			if(! ~ $#cur 0){
-				cat $B/value >$n/$cur
-				echo 'notify Saved type=success' >$w/ctl
-			}
-		case new
-			c=untitled-`{date -n}
-			echo '# New note' >$n/$c
-			refresh
-			pick $c
-			echo root/page/body >$w/focus
-		case del
-			if(! ~ $#cur 0) echo open >$w/overlays/sure/ctl
-		case quit
-			echo quit >$k/ctl
+cat $ui/events | while(ev=`{read}){
+	switch($ev(1)^:^$ev(2)){
+	case select:pick
+		pick `{attr value}
+	case click:save action:save
+		if(! ~ $#cur 0){
+			cat $m/page/body/value >$n/$cur
+			echo 'notify Saved type=success' >$m/ctl
 		}
-	case confirm
+	case action:new
+		c=untitled-`{date -n}
+		echo '# New note' >$n/$c
+		refresh
+		pick $c
+		echo page/body >$m/focus
+	case click:del action:del
+		if(! ~ $#cur 0) echo open >$m/over/sure/ctl
+	case action:quit
+		echo quit >$ui/ctl
+	case confirm:sure
 		rm $n/$cur
 		cur=()
-		echo -n >$B/value
+		echo -n >$m/page/body/value
 		refresh
-	case *
-		stdquit
 	}
 }

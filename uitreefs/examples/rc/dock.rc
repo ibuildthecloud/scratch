@@ -4,45 +4,47 @@
 # split and zoom; a command palette; a custom title bar. The dock layout is
 # saved on quit and restored on the next launch.
 #
-#	gpuifs -t Workspace rc dock.rc [dir]
+#	uitreefs -t Workspace rc dock.rc [dir]
 #
 # Shows: dock and dock-panel with layout read/write (the client never tracks
 # a drag), title-bar, editor with language, save and cursor events, TODO
 # diagnostics from grep, a palette dialog with a searchable list, status
-# bar, keymap contexts, menus with set enabled=.   Needs: M4 (dock)
+# bar, key binding contexts, menus with set enabled=, ask close quit so
+# the layout is saved however the app ends.   Needs: M4 (dock)
 . ./lib.rc
 
 top=$1
 if(~ $#top 0) top=.
 state=.workspace-layout.json
 
-echo 'window main title=Workspace size=1280,800 min=900,560 titlebar=custom pos=center' >$k/ctl
-w=$k/windows/main
-r=$w/root
+m=$ui/win/main
+echo 'set . title=Workspace size=1280,800 min=900,560 titlebar=custom pos=center' >$m/ctl
+# Closing the window or quitting asks first, so the layout can be saved.
+echo 'ask close quit' >$ui/ctl
 
-cat >$r/tree <<'END'
-div root  style='v_flex size_full bg=background'
+cat >$m/tree <<'END'
+div root  : v_flex size_full bg=background
   title-bar tb  title=Workspace
-    div right  style='h_flex gap=4'
-      button run  icon=play  style='ghost xs'  tag=run  tooltip='Run (cmd-r)'
-      button pal  icon=search  style='ghost xs'  tag=palette  tooltip='Commands (cmd-shift-p)'
-  dock ws  style=flex_1
+    div right  : h_flex gap=4
+      button run  icon=play  tag=run  tooltip='Run (cmd-r)'  : ghost xs
+      button pal  icon=search  tag=palette  tooltip='Commands (cmd-shift-p)'  : ghost xs
+  dock ws  : flex_1
     dock-panel files  title=Files  icon=folder  zone=left
-      tree t  selectable=on  style=size_full
+      tree t  selectable  : size_full
     dock-panel src  title=Untitled  icon=file  zone=center
-      editor e  line_numbers=on  style=size_full  context=editor
+      editor e  line_numbers  context=editor  : size_full
     dock-panel outline  title=Outline  icon=list  zone=right
-      list l  selectable=on  style=size_full
-    dock-panel out  title=Output  icon=terminal  zone=bottom  closable=on
-      editor log  readonly=on  soft_wrap=on  style=size_full
+      list l  selectable  : size_full
+    dock-panel out  closable  title=Output  icon=terminal  zone=bottom
+      editor log  readonly  soft_wrap  : size_full
   status-bar st
-    text left  style='text_xs text_color=muted_foreground'
-    text right  style='text_xs text_color=muted_foreground'
+    text left  : text_xs text_color=muted_foreground
+    text right  : text_xs text_color=muted_foreground
 END
-d=$r/ws
+d=$m/ws
 E=$d/src/e
 
-cat >$k/keymap <<'END'
+cat >$ui/keys <<'END'
 cmd-s        save          context=editor
 cmd-r        run
 cmd-shift-p  palette
@@ -54,20 +56,20 @@ item run      label=Run         key=cmd-r
 sep
 item palette  label=''Command Palette…''  key=cmd-shift-p
 sep
-item quit     label=Quit        key=cmd-q' >$k/menus/File
-echo 'set save enabled=off' >$k/ctl
+item quit     label=Quit        key=cmd-q' >$ui/menu/File
+echo 'set save enabled=off' >$ui/ctl
 
 # The palette: a dialog holding a searchable list of commands.
-o=$w/overlays
-echo 'new dialog palette width=520 keyboard=on overlay_closable=on' >$o/ctl
-echo 'new list cmds searchable=on selectable=on style=h=280' >$o/palette/ctl
-tsv >$o/palette/cmds/items <<'END'
-save    | Save file           | icon=check
-run     | Run current file    | icon=play
-grep    | Find TODOs          | icon=search
-reset   | Reset layout        | icon=layout-dashboard
-theme   | Toggle dark mode    | icon=sun-moon
-quit    | Quit                | icon=power
+o=$m/over
+echo 'new dialog palette width=520 keyboard overlay_closable
+new list palette/cmds searchable selectable : h=280' >$o/ctl
+cat >$o/palette/cmds/items <<'END'
+save    'Save file'         icon=check
+run     'Run current file'  icon=play
+grep    'Find TODOs'        icon=search
+reset   'Reset layout'      icon=layout-dashboard
+theme   'Toggle dark mode'  icon=sun-moon
+quit    Quit                icon=power
 END
 
 # Restore the user's dock layout from last time.
@@ -94,14 +96,15 @@ fn lang {
 fn open {
 	if(test -f $1){
 		cur=$1
-		echo begin >$w/ctl
+		echo begin >$m/ctl
 		lang $1 >$E/language
 		cat $1 >$E/value
-		echo `{basename $1} >$d/src/title
-		echo `{basename $1}^' — Workspace' >$r/tb/title
+		b=`{basename $1}
+		echo 'set ws/src title='$b'
+set tb title='''$b' — Workspace''' >$m/ctl
 		outline
-		echo commit >$w/ctl
-		echo 'set save enabled=on' >$k/ctl
+		echo commit >$m/ctl
+		echo 'set save enabled=on' >$ui/ctl
 	}
 }
 # outline: fn, func and fn-like definitions with their line numbers
@@ -120,7 +123,7 @@ fn save {
 		cat $E/value >$cur
 		todos
 		outline
-		echo 'notify ''Saved '^`{basename $cur}^''' type=success' >$w/ctl
+		echo 'notify ''Saved '^`{basename $cur}^''' type=success' >$m/ctl
 	}
 }
 fn run {
@@ -138,32 +141,36 @@ fn cmd {
 	case dismiss; echo close >$o/palette/ctl
 	case reset;   echo -n >$d/layout
 	case theme
-		if(~ `{cat $k/theme/mode} dark) echo light >$k/theme/mode
-		if not echo dark >$k/theme/mode
+		if(~ `{cat $ui/theme/mode} dark) echo light >$ui/theme/mode
+		if not echo dark >$ui/theme/mode
 	case quit
 		cat $d/layout >$state
-		echo quit >$k/ctl
+		echo quit >$ui/ctl
 	}
 }
 
-cat $k/events | while(ev=`{read}){
-	switch($ev(1)){
-	case open select
-		if(has 'node=root/ws/files/t') open `{attr value; attr id}
-		if(has 'node=overlays/palette/cmds'){
-			echo close >$o/palette/ctl
-			cmd `{attr value; attr id}
-		}
-		if(has 'node=root/ws/outline/l') echo `{attr value}^' 1 '^`{attr value}^' 1' >$E/selection
-	case action click
-		cmd `{attr id; attr tag}
-	case save
+# Commands come from buttons (by tag), keys and menus (by action id) and
+# the palette (by item id): the first two land in the event's second word.
+cat $ui/events | while(ev=`{read}){
+	switch($ev(1)^:^$ev(3)){
+	case open:ws/files/t select:ws/files/t
+		open `{attr value; attr id}
+	case open:over/palette/cmds
+		echo close >$o/palette/ctl
+		cmd `{attr id}
+	case select:ws/outline/l
+		echo `{attr value}^' 1 '^`{attr value}^' 1' >$E/selection
+	case action:* click:*
+		cmd $ev(2)
+	case save:*
 		save
-	case cursor
-		echo 'Ln '^`{attr line}^', Col '^`{attr col} >$r/st/right/text
-	case change
-		if(has 'node=root/ws/src/e') echo 'Edited' >$r/st/left/text
-	case close quit
+	case cursor:*
+		echo 'Ln '^`{attr line}^', Col '^`{attr col} >$m/st/right/text
+	case change:ws/src/e
+		echo 'Edited' >$m/st/left/text
+	case close:. quit:*
 		cmd quit
+	case close:ws/*
+		echo close 'seq='^`{attr seq} >$m/$ev(3)/ctl
 	}
 }

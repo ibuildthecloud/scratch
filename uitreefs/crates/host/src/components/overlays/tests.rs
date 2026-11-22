@@ -69,7 +69,7 @@ fn dialog_open_close_verbs(cx: &mut TestAppContext) {
     assert!(hh > 40.);
     assert!(h.bounds(&format!("{d}/footer/ok"))[2] > 0., "footer drawn");
     assert!(h.bounds(&format!("{d}/body"))[2] > 0., "body drawn");
-    assert_eq!(h.read(&format!("{W}/focus")).as_deref(), Some("overlays/about"));
+    assert_eq!(h.read(&format!("{W}/focus")).as_deref(), Some("over/about"));
     h.write(&format!("{d}/ctl"), "close");
     assert_eq!(open_file(&h, "about"), "off");
     // Client verbs send no events.
@@ -99,7 +99,7 @@ fn dialog_escape_asks_to_close(cx: &mut TestAppContext) {
     let lines = h.events(&mut ev);
     let req = lines
         .iter()
-        .find(|l| l.starts_with("close ") && l.contains("node=overlays/d") && l.contains("tag=dlg"))
+        .find(|l| l.starts_with("close ") && l.contains(" over/d win=") && l.contains(" dlg "))
         .unwrap_or_else(|| panic!("{lines:?}"))
         .clone();
     h.ctl(&d, &format!("keep seq={}", seq_of(&req)));
@@ -152,7 +152,7 @@ fn alert_dialog_confirm_and_cancel(cx: &mut TestAppContext) {
     click_part(&mut h, &format!("{a}#confirm"));
     let lines = h.events(&mut ev);
     assert!(
-        lines.iter().any(|l| l.starts_with("confirm win=main node=overlays/confirm-del tag=del")),
+        lines.iter().any(|l| l.starts_with("confirm del over/confirm-del win=main")),
         "{lines:?}"
     );
     assert_eq!(open_file(&h, "confirm-del"), "off");
@@ -198,8 +198,8 @@ fn popover_toggles_on_its_anchor(cx: &mut TestAppContext) {
     h.events(&mut ev);
     h.click(&format!("{R}/more"));
     let lines = h.events(&mut ev);
-    assert!(lines.iter().any(|l| l.starts_with("click ") && l.contains("node=root/more")), "anchor keeps its click: {lines:?}");
-    assert!(lines.iter().any(|l| l.starts_with("open ") && l.contains("node=overlays/pop") && l.contains("tag=pop")), "{lines:?}");
+    assert!(lines.iter().any(|l| l.starts_with("click ") && l.contains(" more win=")), "anchor keeps its click: {lines:?}");
+    assert!(lines.iter().any(|l| l.starts_with("open ") && l.contains(" over/pop win=") && l.contains(" pop ")), "{lines:?}");
     assert_eq!(open_file(&h, "pop"), "on");
     // Placed below the anchor, left edges aligned.
     let [ax, ay, _, ah] = h.bounds(&format!("{R}/more"));
@@ -212,7 +212,7 @@ fn popover_toggles_on_its_anchor(cx: &mut TestAppContext) {
     assert_eq!(open_file(&h, "pop"), "on");
     click_at(&mut h, "main", 700., 500.);
     let lines = h.events(&mut ev);
-    assert!(lines.iter().any(|l| l.starts_with("close ") && l.contains("node=overlays/pop")), "{lines:?}");
+    assert!(lines.iter().any(|l| l.starts_with("close ") && l.contains(" over/pop win=")), "{lines:?}");
     assert_eq!(open_file(&h, "pop"), "off");
     // The anchor toggles: open, then closed.
     h.click(&format!("{R}/more"));
@@ -286,7 +286,7 @@ fn context_menu_on_right_click(cx: &mut TestAppContext) {
     click_part(&mut h, &format!("{m}#item:dup"));
     let lines = h.events(&mut ev);
     assert!(
-        lines.iter().any(|l| l.starts_with("action win=main node=overlays/menu tag=ctx id=dup")),
+        lines.iter().any(|l| l.starts_with("action dup over/menu win=main")),
         "{lines:?}"
     );
     assert_eq!(open_file(&h, "menu"), "off");

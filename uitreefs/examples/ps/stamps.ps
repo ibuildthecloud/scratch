@@ -3,20 +3,23 @@
 % canvas, and Ghostscript draws it there: a fractal tree, a Koch
 % snowflake, a spirograph or a glyph from one of its own fonts.
 %
-%	gpuifs -t Stamps --dir ALPINE:#L sh -c \
-%	    "exec gs -q -dNODISPLAY --permit-file-all='/9/mnt/gpui/*' stamps.ps </9/mnt/gpui/events"
+%	uitreefs -t Stamps --dir ALPINE:#L sh -c \
+%	    'exec gs -q -dNODISPLAY --permit-file-all="$ui/*" stamps.ps <$ui/events'
 %
 % --permit-file-all lets gs, which runs with -dSAFER, write the tree.
 %
 % gs is a Linux program, so it runs in the h9 machine on an Alpine root
-% (ALPINE is a tree with ghostscript installed) and sees the gpuifs tree
-% at /9/mnt/gpui. PostScript opens the tree's files itself with the file
-% operator: it makes the window, writes the screen as a tree document,
-% and writes the canvas's ops. The one thing it can't do is read events
-% from a named file: gs reads named files with fread, which waits for a
-% whole buffer, so an event would sit there until 8 KiB of them came in.
-% Its %stdin is read a line at a time, so the shell's one job is to put
-% the events file on stdin.
+% (ALPINE is a tree with ghostscript installed), and it sees the tree at
+% /mnt/ui, the same $ui as a Plan 9 client. PostScript opens the tree's
+% files itself with the file operator: it sets up the main window, writes
+% the screen as a tree document, and writes the canvas's ops. The one
+% thing it can't do is read events from a named file: gs reads named
+% files with fread, which waits for a whole buffer, so an event would sit
+% there until 8 KiB of them came in. Its %stdin is read a line at a time,
+% so the shell's one job is to put the events file on stdin.
+%
+% Each event line starts name key path, so the loop takes three words off
+% the front with search and compares them; no attribute hunting.
 %
 % The shapes are drawn with ordinary PostScript path operators (moveto,
 % lineto, rlineto, arc, charpath, with rotate and scale in the CTM), on
@@ -25,7 +28,7 @@
 % PostScript would have. The canvas is the stamps list, re-rendered into
 % ops on every change; undo just drops the last stamp.
 
-/base (/9/mnt/gpui) def
+/base (/mnt/ui) def
 /ident matrix def
 ident setmatrix		% user space is device space is canvas space: y down
 /min { 2 copy gt { exch } if pop } def
@@ -40,22 +43,22 @@ ident setmatrix		% user space is device space is canvas space: y down
 
 % ---- The window ------------------------------------------------------------
 
-(/ctl) (window main title=Stamps size=900,640 min=520,400 pos=center\n) spit
-(/keymap) (cmd-z undo\n) spit
-(/windows/main/root/tree) (div root  style='v_flex size_full bg=background'
+(/win/main/ctl) (set . title=Stamps size=900,640 min=520,400 pos=center\n) spit
+(/keys) (cmd-z undo\n) spit
+(/win/main/tree) (div root  : v_flex size_full bg=background
   toolbar bar
     button-group shape  value=twig  tag=shape
       button twig  label=Tree
       button flake  label=Snowflake
       button spiro  label=Spirograph
       button glyph  label=Glyph
-    separator s1  dir=v
-    text dl  text=Detail  style='text_sm text_color=muted_foreground'
-    slider depth  min=1  max=8  value=6  style=w=140  tag=depth
+    separator s1  dir=col
+    text dl  text=Detail  : text_sm text_color=muted_foreground
+    slider depth  min=1  max=8  value=6  tag=depth  : w=140
     spacer sp
-    button undo  icon=undo  style='ghost sm'  tag=undo  tooltip='Undo (cmd-z)'
-    button clear  icon=trash  label=Clear  style='ghost sm'  tag=clear
-  canvas c  style='flex_1 cursor_crosshair'  on=click
+    button undo  icon=undo  tag=undo  tooltip='Undo (cmd-z)'  : ghost sm
+    button clear  icon=trash  label=Clear  tag=clear  : ghost sm
+  canvas c  on=click  : flex_1 cursor_crosshair
 ) spit
 
 % ---- Writing ops -----------------------------------------------------------
@@ -168,7 +171,7 @@ ident setmatrix		% user space is device space is canvas space: y down
 	(path hint) W emitpath ( fill=muted_foreground opacity=0.6\n) W
 } def
 /render {
-	(/windows/main/root/c/ops) at (w) file /out exch def
+	(/win/main/c/ops) at (w) file /out exch def
 	(rect bg 0 0 4000 4000 fill=background\n) W
 	title
 	0 1 stamps length 1 sub {
@@ -185,7 +188,9 @@ render
 /attr { % line (key) -> value or null
 	search { pop pop ( ) search { exch pop exch pop } if } { pop null } ifelse
 } def
-/has { search { pop pop pop true } { pop false } ifelse } def
+/next { % (a b c) -> (b c) (a): the first word off the front
+	( ) search { exch pop } { () exch } ifelse
+} def
 /num { token pop exch pop } def
 /shape /twig def
 /detail 6 def
@@ -195,22 +200,20 @@ render
 {
 	ev buf readline not { pop exit } if
 	/line exch def
-	/kind line ( ) search { exch pop exch pop } if def	% the event's name
-	kind (click) eq {
-		line ( node=root/c ) has {
-			/stamps [ stamps aload pop
-				[ shape line ( x=) attr num line ( y=) attr num detail
-				  stamps length 0.618034 mul dup floor sub ] ] def
-			render
-		} if
-		line ( tag=clear ) has { /stamps [] def render } if
-		line ( tag=undo ) has { undo } if
+	line next /name exch def next /key exch def next /path exch def pop
+	name (click) eq path (c) eq and {
+		/stamps [ stamps aload pop
+			[ shape line ( x=) attr num line ( y=) attr num detail
+			  stamps length 0.618034 mul dup floor sub ] ] def
+		render
 	} if
-	kind (action) eq { line ( id=undo ) has { undo } if } if
-	kind (change) eq {
-		line ( tag=shape ) has { /shape line ( value=) attr cvn def } if
-		line ( tag=depth ) has { /detail line ( value=) attr num round cvi def } if
+	name (click) eq name (action) eq or {
+		key (clear) eq { /stamps [] def render } if
+		key (undo) eq { undo } if
 	} if
-	kind (close) eq kind (quit) eq or { exit } if
+	name (change) eq {
+		key (shape) eq { /shape line ( value=) attr cvn def } if
+		key (depth) eq { /detail line ( value=) attr num round cvi def } if
+	} if
 } loop
 quit

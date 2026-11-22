@@ -657,7 +657,7 @@ fn example_documents_parse() {
             assert_eq!(doc::parse(&p).unwrap(), node, "{}", f.display());
             n += 1;
         }
-        for k in heredocs(&src, "/keymap") {
+        for k in heredocs(&src, "/keys") {
             let _: Vec<KeyBinding> =
                 lines::parse_lines(&k).unwrap_or_else(|e| panic!("{}: {e}", f.display()));
         }
@@ -672,23 +672,15 @@ fn example_documents_parse() {
 }
 
 #[test]
-fn example_tsv_files_parse() {
+fn example_data_files_parse() {
     let g = examples().join("rc/gallery");
-    let tsv = |p: &str| std::fs::read_to_string(g.join(p)).unwrap();
-    // The gallery's tree items are written with `tsv` (" | " to tabs).
-    let detab = |s: String| {
-        s.lines()
-            .map(|l| {
-                l.split('|')
-                    .map(|f| f.trim())
-                    .collect::<Vec<_>>()
-                    .join("\t")
-            })
-            .collect::<Vec<_>>()
-            .join("\n")
+    // The gallery's data files are Plan 9 words, one line per item.
+    let words = |p: &str| {
+        let s = std::fs::read_to_string(g.join(p)).unwrap();
+        lines::tabify(&s).unwrap().into_owned()
     };
-    let items: Vec<TreeItem> = lines::parse_lines(&detab(tsv("treeview/t/items.tsv"))).unwrap();
+    let items: Vec<TreeItem> = lines::parse_lines(&words("treeview/t/items")).unwrap();
     assert!(items.iter().any(|i| i.parent.is_none()));
-    let _: Vec<Column> = lines::parse_lines(&detab(tsv("table/t/columns.tsv"))).unwrap();
-    let _: Vec<lines::Row> = lines::parse_lines(&detab(tsv("table/t/rows.tsv"))).unwrap();
+    let _: Vec<Column> = lines::parse_lines(&words("table/t/columns")).unwrap();
+    let _: Vec<lines::Row> = lines::parse_lines(&words("table/t/rows")).unwrap();
 }

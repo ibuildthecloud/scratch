@@ -91,7 +91,7 @@ fn sidebar_item_click_sends_its_tag(cx: &mut TestAppContext) {
     h.events(&mut ev);
     let lines = scan_click(&mut h, &mut ev, (x + 60., y + 4.), (0., 4.), 60, "click ");
     let click = lines.iter().find(|l| l.starts_with("click ")).unwrap();
-    assert!(click.contains("node=root/nav/g/general") && click.contains("tag=page:general"), "{click}");
+    assert!(click.contains(" nav/g/general win=") && click.contains(" page:general "), "{click}");
 }
 
 #[gpui::test]
@@ -138,7 +138,7 @@ fn tabs_draw_only_the_selected_panel(cx: &mut TestAppContext) {
     click_part(&mut h, &format!("{t}/b#header"));
     let lines = h.events(&mut ev);
     assert!(
-        lines.iter().any(|l| l.starts_with("change ") && l.contains("node=root/t") && l.contains("value=b") && l.contains("via=user")),
+        lines.iter().any(|l| l.starts_with("change ") && l.contains(" t win=") && l.contains("value=b") && l.contains("via=user")),
         "{lines:?}"
     );
     assert_eq!(h.read(&format!("{t}/value")).as_deref(), Some("b"));
@@ -165,7 +165,7 @@ fn tab_close_request_keep_and_close(cx: &mut TestAppContext) {
     let lines = h.events(&mut ev);
     let req = lines
         .iter()
-        .find(|l| l.starts_with("close ") && l.contains("node=root/t/b"))
+        .find(|l| l.starts_with("close ") && l.contains(" t/b win="))
         .unwrap_or_else(|| panic!("{lines:?}"))
         .clone();
     let seq = seq_of(&req);
@@ -210,7 +210,7 @@ fn breadcrumb_click_sends_id(cx: &mut TestAppContext) {
     h.events(&mut ev);
     let lines = scan_click(&mut h, &mut ev, (x + 2., y + hh / 2.), (3., 0.), 60, "click ");
     let l = lines.iter().find(|l| l.starts_with("click ")).unwrap();
-    assert!(l.contains("node=root/crumbs") && l.contains("id=home"), "{l}");
+    assert!(l.contains(" crumbs win=") && l.contains("id=home"), "{l}");
 }
 
 #[gpui::test]
@@ -263,7 +263,7 @@ fn link_click_once(cx: &mut TestAppContext) {
     let lines = h.events(&mut ev);
     let n = lines.iter().filter(|x| x.starts_with("click ")).count();
     assert_eq!(n, 1, "{lines:?}");
-    assert!(lines[0..].iter().any(|x| x.contains("tag=help")));
+    assert!(lines[0..].iter().any(|x| x.contains(" help ")));
 }
 
 #[gpui::test]

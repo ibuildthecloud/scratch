@@ -1,23 +1,21 @@
       *> payroll.cob: weekly payroll for a small firm, in COBOL.
       *>
-      *>   gpuifs --headless --dir ALPINE:#L cobc -x payroll.cob
-      *>   gpuifs -t Payroll --dir ALPINE:#L \
-      *>       --env COB_LS_VALIDATE=false ./payroll
+      *>   uitreefs --headless --dir ALPINE:#L cobc -x payroll.cob
+      *>   uitreefs -t Payroll --dir ALPINE:#L ./payroll
       *>
       *> GnuCOBOL builds a Linux program, so it runs in the h9 machine
       *> on an Alpine root (ALPINE is a tree with gnucobol installed),
-      *> where the gpuifs tree is /9 followed by $gpuifs. COBOL does all
-      *> the file work itself, through ordinary SELECT ... ASSIGN files
-      *> whose names are set at run time: it makes the window, writes
-      *> the screen as a tree document, reads the events file one
-      *> record (one event) at a time, reads each input's value file,
-      *> and writes field errors, the pay stub and the register back as
-      *> files. A CLOSE is what makes gpuifs apply a whole file, and
-      *> begin/commit on the window's ctl make each run one frame.
-      *>
-      *> COB_LS_VALIDATE=false: GnuCOBOL 3.2 refuses control characters
-      *> in LINE SEQUENTIAL records by default, as COBOL 2022 says, and
-      *> the register table and the pay stub are tab-separated.
+      *> where the tree is at $ui, as for a Plan 9 client. COBOL does
+      *> all the file work itself, through ordinary SELECT ... ASSIGN
+      *> files whose names are set at run time: it sets up the main
+      *> window, writes the screen as a tree document, reads the events
+      *> file one record (one event) at a time, and reads each input's
+      *> value file. An event record starts name key path, so one
+      *> UNSTRING ... DELIMITED BY SPACE finds what to do. Each run is
+      *> then one ctl write: field errors, the pay stub, the register,
+      *> the total and the cleared inputs, as set lines with here-values
+      *> for the multi-line ones. CLOSE applies them all, in one frame.
+      *> for the multi-line ones. CLOSE applies them all in one frame.
       *>
       *> Money is fixed-point decimal, as COBOL has always done it:
       *> PIC 9(7)V99 fields, COMPUTE ROUNDED, and edited pictures like
@@ -57,13 +55,17 @@
        01  GUI-STATUS              PIC XX.
        01  GUI-IN-STATUS           PIC XX.
        01  LN                      PIC X(1024).
-       01  TAB                     PIC X VALUE X"09".
        01  EV                      PIC X(1024).
        01  EV-NAME                 PIC X(32).
-       01  HITS                    PIC 9(4).
+       01  EV-KEY                  PIC X(64).
+       01  EV-PATH                 PIC X(200).
        01  DONE-FLAG               PIC X VALUE "N".
            88  DONE                VALUE "Y".
        01  VAL                     PIC X(200).
+       01  HOURS-IN                PIC X(200).
+       01  RATE-IN                 PIC X(200).
+       01  FLD                     PIC X(40).
+       01  ERR                     PIC X(80).
 
       *> One run: what was typed, and what it comes to.
        01  EMP-NAME                PIC X(40).
@@ -102,14 +104,10 @@
 
        PROCEDURE DIVISION.
        MAIN.
-           ACCEPT BASE FROM ENVIRONMENT "gpuifs"
+           ACCEPT BASE FROM ENVIRONMENT "ui"
            IF BASE = SPACES
-               MOVE "/mnt/gpui" TO BASE
+               MOVE "/mnt/ui" TO BASE
            END-IF
-      *>   A Linux program sees the 9front tree under /9.
-           STRING "/9" FUNCTION TRIM(BASE) DELIMITED BY SIZE
-               INTO REL
-           MOVE REL TO BASE
            PERFORM BUILD-SCREEN
            MOVE SPACES TO EVENTS-PATH
            STRING FUNCTION TRIM(BASE) "/events" DELIMITED BY SIZE
@@ -124,56 +122,48 @@
            CLOSE EVENTS
            STOP RUN.
 
+      *> The button, Enter in an input (the form's tag is inherited)
+      *> and cmd-enter all have the key "run". Closing the window
+      *> quits the app, which ends the events file.
        HANDLE-EVENT.
-           MOVE SPACES TO EV-NAME
-           UNSTRING EV DELIMITED BY SPACE INTO EV-NAME
-           MOVE 0 TO HITS
-           INSPECT EV TALLYING HITS FOR ALL " tag=run "
-           EVALUATE TRUE
-               WHEN (EV-NAME = "click" OR EV-NAME = "submit")
-                       AND HITS > 0
-                   PERFORM RUN-PAYROLL
-               WHEN EV-NAME = "action"
-                   INSPECT EV TALLYING HITS FOR ALL " id=run "
-                   IF HITS > 0
-                       PERFORM RUN-PAYROLL
-                   END-IF
-               WHEN EV-NAME = "close" OR EV-NAME = "quit"
-                   SET DONE TO TRUE
-           END-EVALUATE.
+           MOVE SPACES TO EV-NAME EV-KEY EV-PATH
+           UNSTRING EV DELIMITED BY SPACE
+               INTO EV-NAME EV-KEY EV-PATH
+           IF EV-KEY = "run" AND (EV-NAME = "click"
+                   OR EV-NAME = "submit" OR EV-NAME = "action")
+               PERFORM RUN-PAYROLL
+           END-IF.
 
       *> ---- The screen -------------------------------------------
        BUILD-SCREEN.
-           MOVE "/ctl" TO REL
+           MOVE "/win/main/ctl" TO REL
            PERFORM OPEN-GUI
-           MOVE "window main title=Payroll size=820,600 min=640,480"
+           MOVE "set . title=Payroll size=820,600 min=640,480"
                TO LN
            PERFORM SAY
            CLOSE GUI
-           MOVE "/keymap" TO REL
+           MOVE "/keys" TO REL
            PERFORM OPEN-GUI
            MOVE "cmd-enter run" TO LN
            PERFORM SAY
            CLOSE GUI
-           MOVE "/windows/main/root/tree" TO REL
+           MOVE "/win/main/tree" TO REL
            PERFORM OPEN-GUI
-           STRING "div root  style='v_flex size_full p=20 gap=14 "
-               "bg=background'"
-               DELIMITED BY SIZE INTO LN
-           PERFORM SAY
-           MOVE "  div head  style='h_flex items_baseline gap=10'"
+           MOVE "div root  : v_flex size_full p=20 gap=14 bg=background"
                TO LN
            PERFORM SAY
+           MOVE "  div head  : h_flex items_baseline gap=10" TO LN
+           PERFORM SAY
            STRING "    text h  text='ACME Widget Co.'  "
-               "style='text_xl font_semibold'"
+               ": text_xl font_semibold"
                DELIMITED BY SIZE INTO LN
            PERFORM SAY
            STRING "    text sub  "
                "text='Weekly payroll, computed in COBOL'  "
-               "style='text_sm text_color=muted_foreground'"
+               ": text_sm text_color=muted_foreground"
                DELIMITED BY SIZE INTO LN
            PERFORM SAY
-           MOVE "  form f  layout=h  tag=run" TO LN
+           MOVE "  form f  labels=side  tag=run" TO LN
            PERFORM SAY
            MOVE "    field name  label=Employee" TO LN
            PERFORM SAY
@@ -189,104 +179,110 @@
            PERFORM SAY
            MOVE "    field go  label=' '" TO LN
            PERFORM SAY
-           STRING "      button run  label='Run payroll'  style=primary"
-               "  tag=run" DELIMITED BY SIZE INTO LN
-           PERFORM SAY
-           MOVE "  div body  style='h_flex flex_1 gap=14 items_stretch'"
+           MOVE "      button run  label='Run payroll'  : primary"
                TO LN
            PERFORM SAY
-           MOVE "    div left  style='v_flex gap=8 w=300'" TO LN
-           PERFORM SAY
-           MOVE "      text t1  text='Pay stub'  style='font_semibold'"
+           MOVE "  div body  : h_flex flex_1 gap=14 items_stretch"
                TO LN
            PERFORM SAY
-           MOVE "      description-list stub  columns=1  bordered=on"
+           MOVE "    div left  : v_flex gap=8 w=300" TO LN
+           PERFORM SAY
+           MOVE "      text t1  text='Pay stub'  : font_semibold"
                TO LN
            PERFORM SAY
-           MOVE "    div right  style='v_flex flex_1 gap=8'" TO LN
-           PERFORM SAY
-           MOVE "      text t2  text=Register  style='font_semibold'"
+           MOVE "      description-list stub  bordered  columns=1"
                TO LN
            PERFORM SAY
-           MOVE "      table reg  stripe=on  style=flex_1" TO LN
+           MOVE "    div right  : v_flex flex_1 gap=8" TO LN
            PERFORM SAY
-           STRING "      text total  style='text_sm text_right "
-               "text_color=muted_foreground'  "
-               "text='No one paid yet.'"
+           MOVE "      text t2  text=Register  : font_semibold"
+               TO LN
+           PERFORM SAY
+           MOVE "      table reg  stripe  : flex_1" TO LN
+           PERFORM SAY
+           STRING "      text total  text='No one paid yet.'  "
+               ": text_sm text_right text_color=muted_foreground"
                DELIMITED BY SIZE INTO LN
            PERFORM SAY
            CLOSE GUI
 
-           MOVE "/windows/main/root/body/right/reg/columns" TO REL
+      *>   Data files are lines of words, quoted where they hold blanks.
+           MOVE "/win/main/body/right/reg/columns" TO REL
            PERFORM OPEN-GUI
-           STRING "emp" TAB "Employee" TAB "170" INTO LN
+           MOVE "emp Employee 170" TO LN
            PERFORM SAY
-           STRING "hrs" TAB "Hours" TAB "70" TAB "align=right" INTO LN
+           MOVE "hrs Hours 70 align=right" TO LN
            PERFORM SAY
-           STRING "rate" TAB "Rate" TAB "80" TAB "align=right" INTO LN
+           MOVE "rate Rate 80 align=right" TO LN
            PERFORM SAY
-           STRING "net" TAB "Net pay" TAB "110" TAB "align=right"
-               INTO LN
+           MOVE "net 'Net pay' 110 align=right" TO LN
            PERFORM SAY
            CLOSE GUI
-           MOVE "/windows/main/root/body/left/stub/items" TO REL
+           MOVE "/win/main/body/left/stub/items" TO REL
            PERFORM OPEN-GUI
-           STRING "Employee" TAB "-" INTO LN
+           MOVE "Employee -" TO LN
            PERFORM SAY
            CLOSE GUI
-           MOVE "/windows/main/focus" TO REL
+           MOVE "/win/main/focus" TO REL
            PERFORM OPEN-GUI
-           MOVE "root/f/name/in" TO LN
+           MOVE "f/name/in" TO LN
            PERFORM SAY
            CLOSE GUI.
 
       *> ---- One run ----------------------------------------------
+      *> Read the three inputs, then write one ctl: every line in it
+      *> applies together when it is closed.
        RUN-PAYROLL.
-           MOVE "/windows/main/ctl" TO REL
-           PERFORM OPEN-GUI
-           MOVE "begin" TO LN
-           PERFORM SAY
-           CLOSE GUI
            SET ALL-OK TO TRUE
-
-           MOVE "/windows/main/root/f/name/in/value" TO REL
+           MOVE "/win/main/f/name/in/value" TO REL
            PERFORM READ-VALUE
            MOVE VAL TO EMP-NAME
-           MOVE "/windows/main/root/f/name/error" TO REL
+           MOVE "/win/main/f/hours/in/value" TO REL
+           PERFORM READ-VALUE
+           MOVE VAL TO HOURS-IN
+           MOVE "/win/main/f/rate/in/value" TO REL
+           PERFORM READ-VALUE
+           MOVE VAL TO RATE-IN
+
+           MOVE "/win/main/ctl" TO REL
+           PERFORM OPEN-GUI
+
+           MOVE SPACES TO ERR
            IF EMP-NAME = SPACES
-               MOVE "Who are we paying?" TO LN
+               MOVE "Who are we paying?" TO ERR
            END-IF
-           PERFORM PUT-ERROR
+           MOVE "f/name" TO FLD
+           PERFORM SET-ERROR
 
-           MOVE "/windows/main/root/f/hours/in/value" TO REL
-           PERFORM READ-VALUE
-           MOVE "/windows/main/root/f/hours/error" TO REL
-           IF FUNCTION TEST-NUMVAL(VAL) NOT = 0 OR VAL = SPACES
-               MOVE "Hours must be a number" TO LN
+           MOVE SPACES TO ERR
+           IF FUNCTION TEST-NUMVAL(HOURS-IN) NOT = 0
+                   OR HOURS-IN = SPACES
+               MOVE "Hours must be a number" TO ERR
            ELSE
-               IF FUNCTION NUMVAL(VAL) > 168
-                       OR FUNCTION NUMVAL(VAL) <= 0
-                   MOVE "There are 168 hours in a week" TO LN
+               IF FUNCTION NUMVAL(HOURS-IN) > 168
+                       OR FUNCTION NUMVAL(HOURS-IN) <= 0
+                   MOVE "There are 168 hours in a week" TO ERR
                ELSE
-                   COMPUTE HOURS ROUNDED = FUNCTION NUMVAL(VAL)
+                   COMPUTE HOURS ROUNDED = FUNCTION NUMVAL(HOURS-IN)
                END-IF
            END-IF
-           PERFORM PUT-ERROR
+           MOVE "f/hours" TO FLD
+           PERFORM SET-ERROR
 
-           MOVE "/windows/main/root/f/rate/in/value" TO REL
-           PERFORM READ-VALUE
-           MOVE "/windows/main/root/f/rate/error" TO REL
-           IF FUNCTION TEST-NUMVAL-C(VAL) NOT = 0 OR VAL = SPACES
-               MOVE "Rate must be an amount" TO LN
+           MOVE SPACES TO ERR
+           IF FUNCTION TEST-NUMVAL-C(RATE-IN) NOT = 0
+                   OR RATE-IN = SPACES
+               MOVE "Rate must be an amount" TO ERR
            ELSE
-               IF FUNCTION NUMVAL-C(VAL) > 9999.99
-                       OR FUNCTION NUMVAL-C(VAL) <= 0
-                   MOVE "Rate must be 0.01 to 9,999.99" TO LN
+               IF FUNCTION NUMVAL-C(RATE-IN) > 9999.99
+                       OR FUNCTION NUMVAL-C(RATE-IN) <= 0
+                   MOVE "Rate must be 0.01 to 9,999.99" TO ERR
                ELSE
-                   COMPUTE RATE ROUNDED = FUNCTION NUMVAL-C(VAL)
+                   COMPUTE RATE ROUNDED = FUNCTION NUMVAL-C(RATE-IN)
                END-IF
            END-IF
-           PERFORM PUT-ERROR
+           MOVE "f/rate" TO FLD
+           PERFORM SET-ERROR
 
            IF ALL-OK
                PERFORM COMPUTE-PAY
@@ -294,12 +290,20 @@
                PERFORM ADD-TO-REGISTER
                PERFORM CLEAR-INPUTS
            END-IF
-
-           MOVE "/windows/main/ctl" TO REL
-           PERFORM OPEN-GUI
-           MOVE "commit" TO LN
-           PERFORM SAY
            CLOSE GUI.
+
+      *> SET-ERROR: a set line for FLD's error; spaces clear it.
+       SET-ERROR.
+           IF ERR = SPACES
+               STRING "set " FUNCTION TRIM(FLD) " error="
+                   DELIMITED BY SIZE INTO LN
+           ELSE
+               MOVE "N" TO OK-FLAG
+               STRING "set " FUNCTION TRIM(FLD) " error='"
+                   FUNCTION TRIM(ERR) "'"
+                   DELIMITED BY SIZE INTO LN
+           END-IF
+           PERFORM SAY.
 
        COMPUTE-PAY.
            IF HOURS > 40
@@ -321,39 +325,41 @@
            COMPUTE FICA ROUNDED = GROSS * 0.0765
            COMPUTE NET = GROSS - FED - FICA.
 
+      *> The stub's items, as a here-value: label, then amount.
        SHOW-STUB.
-           MOVE "/windows/main/root/body/left/stub/items" TO REL
-           PERFORM OPEN-GUI
-           STRING "Employee" TAB FUNCTION TRIM(EMP-NAME)
+           MOVE "set body/left/stub items=<<END" TO LN
+           PERFORM SAY
+           STRING "Employee '" FUNCTION TRIM(EMP-NAME) "'"
                DELIMITED BY SIZE INTO LN
            PERFORM SAY
            MOVE REG-HRS TO HRS-ED
            MOVE REG-PAY TO MONEY
-           STRING "Regular, " FUNCTION TRIM(HRS-ED) " h" TAB
+           STRING "'Regular, " FUNCTION TRIM(HRS-ED) " h' "
                FUNCTION TRIM(MONEY) DELIMITED BY SIZE INTO LN
            PERFORM SAY
            MOVE OT-HRS TO HRS-ED
            MOVE OT-PAY TO MONEY
-           STRING "Overtime, " FUNCTION TRIM(HRS-ED) " h at 1.5" TAB
+           STRING "'Overtime, " FUNCTION TRIM(HRS-ED) " h at 1.5' "
                FUNCTION TRIM(MONEY) DELIMITED BY SIZE INTO LN
            PERFORM SAY
            MOVE GROSS TO MONEY
-           STRING "Gross pay" TAB FUNCTION TRIM(MONEY)
+           STRING "'Gross pay' " FUNCTION TRIM(MONEY)
                DELIMITED BY SIZE INTO LN
            PERFORM SAY
            MOVE FED TO MONEY
-           STRING "Federal tax" TAB "-" FUNCTION TRIM(MONEY)
+           STRING "'Federal tax' -" FUNCTION TRIM(MONEY)
                DELIMITED BY SIZE INTO LN
            PERFORM SAY
            MOVE FICA TO MONEY
-           STRING "FICA, 7.65%" TAB "-" FUNCTION TRIM(MONEY)
+           STRING "'FICA, 7.65%' -" FUNCTION TRIM(MONEY)
                DELIMITED BY SIZE INTO LN
            PERFORM SAY
            MOVE NET TO MONEY
-           STRING "Net pay" TAB FUNCTION TRIM(MONEY)
+           STRING "'Net pay' " FUNCTION TRIM(MONEY)
                DELIMITED BY SIZE INTO LN
            PERFORM SAY
-           CLOSE GUI.
+           MOVE "END" TO LN
+           PERFORM SAY.
 
        ADD-TO-REGISTER.
            IF REG-COUNT < 99
@@ -369,50 +375,41 @@
            ADD GROSS TO TOTAL-GROSS
            ADD NET TO TOTAL-NET
 
-           MOVE "/windows/main/root/body/right/reg/rows" TO REL
-           PERFORM OPEN-GUI
+           MOVE "set body/right/reg rows=<<END" TO LN
+           PERFORM SAY
            PERFORM VARYING I FROM 1 BY 1 UNTIL I > REG-COUNT
                MOVE I TO N-ED
-               STRING "r" FUNCTION TRIM(N-ED) TAB
-                   FUNCTION TRIM(R-NAME(I)) TAB
-                   FUNCTION TRIM(R-HOURS(I)) TAB
-                   FUNCTION TRIM(R-RATE(I)) TAB
+               STRING "r" FUNCTION TRIM(N-ED) " '"
+                   FUNCTION TRIM(R-NAME(I)) "' "
+                   FUNCTION TRIM(R-HOURS(I)) " "
+                   FUNCTION TRIM(R-RATE(I)) " "
                    FUNCTION TRIM(R-NET(I))
                    DELIMITED BY SIZE INTO LN
                PERFORM SAY
            END-PERFORM
-           CLOSE GUI
+           MOVE "END" TO LN
+           PERFORM SAY
 
-           MOVE "/windows/main/root/body/right/total/text" TO REL
-           PERFORM OPEN-GUI
            MOVE REG-COUNT TO N-ED
            MOVE TOTAL-GROSS TO BIG-MONEY
-           STRING FUNCTION TRIM(N-ED) " paid. Gross "
-               FUNCTION TRIM(BIG-MONEY) DELIMITED BY SIZE INTO LN
-           MOVE TOTAL-NET TO BIG-MONEY
            MOVE SPACES TO VAL
-           STRING FUNCTION TRIM(LN) ", net "
-               FUNCTION TRIM(BIG-MONEY) "." DELIMITED BY SIZE INTO VAL
-           MOVE VAL TO LN
-           PERFORM SAY
-           CLOSE GUI.
+           STRING "set body/right/total text='"
+               FUNCTION TRIM(N-ED) " paid. Gross "
+               FUNCTION TRIM(BIG-MONEY) DELIMITED BY SIZE INTO VAL
+           MOVE TOTAL-NET TO BIG-MONEY
+           STRING FUNCTION TRIM(VAL) ", net "
+               FUNCTION TRIM(BIG-MONEY) ".'" DELIMITED BY SIZE INTO LN
+           PERFORM SAY.
 
        CLEAR-INPUTS.
-      *>   Opening a value file for output and closing it empties it.
-           MOVE "/windows/main/root/f/name/in/value" TO REL
-           PERFORM OPEN-GUI
-           CLOSE GUI
-           MOVE "/windows/main/root/f/hours/in/value" TO REL
-           PERFORM OPEN-GUI
-           CLOSE GUI
-           MOVE "/windows/main/root/f/rate/in/value" TO REL
-           PERFORM OPEN-GUI
-           CLOSE GUI
-           MOVE "/windows/main/focus" TO REL
-           PERFORM OPEN-GUI
-           MOVE "root/f/name/in" TO LN
+           MOVE "set f/name/in value=" TO LN
            PERFORM SAY
-           CLOSE GUI.
+           MOVE "set f/hours/in value=" TO LN
+           PERFORM SAY
+           MOVE "set f/rate/in value=" TO LN
+           PERFORM SAY
+           MOVE "set . focus=f/name/in" TO LN
+           PERFORM SAY.
 
       *> ---- File helpers ------------------------------------------
       *> OPEN-GUI: open BASE followed by REL for output.
@@ -440,18 +437,3 @@
                END-READ
                CLOSE GUI-IN
            END-IF.
-
-      *> PUT-ERROR: set a field's error to LN; spaces clear it.
-       PUT-ERROR.
-           IF LN NOT = SPACES
-               MOVE "N" TO OK-FLAG
-           END-IF
-           MOVE SPACES TO GUI-PATH
-           STRING FUNCTION TRIM(BASE) FUNCTION TRIM(REL)
-               DELIMITED BY SIZE INTO GUI-PATH
-           OPEN OUTPUT GUI
-           IF LN NOT = SPACES
-               WRITE GUI-REC FROM LN
-           END-IF
-           CLOSE GUI
-           MOVE SPACES TO LN.

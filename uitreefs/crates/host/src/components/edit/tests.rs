@@ -125,7 +125,7 @@ fn editor_save_comes_from_the_client_binding(cx: &mut TestAppContext) {
     h.click(&e);
     h.keys("main", "ctrl-s");
     let lines = h.events(&mut ev);
-    assert!(has(&lines, "save ", &["node=root/e"]), "{lines:?}");
+    assert!(has(&lines, "save ", &[" e win="]), "{lines:?}");
     assert!(!has(&lines, "action ", &["id=save"]), "{lines:?}");
 }
 
@@ -138,7 +138,7 @@ fn editor_save_falls_back_to_the_platform_key(cx: &mut TestAppContext) {
     h.click(&e);
     h.keys("main", "ctrl-s");
     let lines = h.events(&mut ev);
-    assert!(has(&lines, "save ", &["node=root/e"]), "{lines:?}");
+    assert!(has(&lines, "save ", &[" e win="]), "{lines:?}");
 }
 
 #[gpui::test]
@@ -219,13 +219,13 @@ fn diff_from_old_and_new_and_from_a_patch(cx: &mut TestAppContext) {
     h.write(&format!("{d}/new"), "a\nB\nc\nd\n");
     let [_, _, w, hh] = h.bounds(&d);
     assert!(w > 0. && (hh - 200.).abs() < 1.);
-    h.write(&format!("{d}/layout"), "split");
+    h.write(&format!("{d}/view"), "split");
     h.write(
         &format!("{d}/patch"),
         "--- a/x.txt\n+++ b/x.txt\n@@ -1,2 +1,2 @@\n one\n-two\n+TWO\n",
     );
     h.write(&format!("{d}/patch"), "not a patch at all\n");
-    assert!(h.try_write(&format!("{d}/layout"), "sideways").is_err());
+    assert!(h.try_write(&format!("{d}/view"), "sideways").is_err());
 }
 
 #[test]

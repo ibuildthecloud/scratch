@@ -268,7 +268,7 @@ fn dock_close_is_a_request_and_keep_brings_it_back(cx: &mut TestAppContext) {
         .find(|l| l.starts_with("panel-close "))
         .unwrap_or_else(|| panic!("{lines:?}"));
     assert!(
-        line.contains("node=root/ws") && line.contains("id=out"),
+        line.contains(" ws win=") && line.contains("id=out"),
         "{line}"
     );
     assert!(

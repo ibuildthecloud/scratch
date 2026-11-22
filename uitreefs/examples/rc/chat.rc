@@ -2,7 +2,7 @@
 # chat.rc: a chat window with a small rule-based assistant (an ELIZA in
 # awk), with a typing indicator and markdown replies.
 #
-#	gpuifs -t Chat rc chat.rc
+#	uitreefs -t Chat rc chat.rc
 #
 # Shows: message-list fed from one transcript file (id role time header,
 # markdown body, blank line), stick_to_bottom, an input whose submit event
@@ -13,27 +13,26 @@
 log=/tmp/chat.txt
 >$log
 
-echo 'window main title=Chat size=520,700 min=380,420 pos=center' >$k/ctl
-w=$k/windows/main
-r=$w/root
-cat >$r/tree <<'END'
-div root  style='v_flex size_full bg=background'
-  div head  style='h_flex items_center gap=10 px=16 py=10 border_b_1 border_color=border'
-    avatar a  name=Eliza  style=sm
-    div n  style='v_flex flex_1'
-      text name  style=font_semibold  text=Eliza
-      text st  style='text_xs text_color=muted_foreground'  text=online
-    button raw  icon=file-text  style='ghost sm'  tag=raw  tooltip=Transcript
-    button clear  icon=trash  style='ghost sm'  tag=clear  tooltip='Clear chat'
-  message-list msgs  stick_to_bottom=on  style='flex_1 p=16'
-  div compose  style='h_flex gap=8 p=12 border_t_1 border_color=border'
-    input in  placeholder='Message Eliza…'  style=flex_1  tag=send
-    button go  icon=send  style=primary  tag=send
+m=$ui/win/main
+echo 'set . title=Chat size=520,700 min=380,420 pos=center' >$m/ctl
+cat >$m/tree <<'END'
+div root  : v_flex size_full bg=background
+  div head  : h_flex items_center gap=10 px=16 py=10 border_b_1 border_color=border
+    avatar a  name=Eliza  : sm
+    div n  : v_flex flex_1
+      text name  text=Eliza  : font_semibold
+      text st  text=online  : text_xs text_color=muted_foreground
+    button raw  icon=file-text  tag=raw  tooltip=Transcript  : ghost sm
+    button clear  icon=trash  tag=clear  tooltip='Clear chat'  : ghost sm
+  message-list msgs  stick_to_bottom  : flex_1 p=16
+  div compose  : h_flex gap=8 p=12 border_t_1 border_color=border
+    input in  placeholder='Message Eliza…'  tag=send  : flex_1
+    button go  icon=send  tag=send  : primary
 END
-M=$r/msgs
-echo root/compose/in >$w/focus
-echo 'new sheet raw side=right size=420 title=Transcript' >$w/overlays/ctl
-echo 'new editor e readonly=on soft_wrap=on language=markdown style=size_full' >$w/overlays/raw/ctl
+M=$m/msgs
+echo compose/in >$m/focus
+echo 'new sheet raw side=right size=420 title=Transcript
+new editor raw/e readonly soft_wrap language=markdown : size_full' >$m/over/ctl
 
 n=0
 fn say {
@@ -63,7 +62,7 @@ fn eliza {
 		if(s ~ /i feel/)                 { sub(/.*i feel /, "", s); print "Why do you feel " s "?"; exit }
 		if(s ~ /because/)                { print "Is that the *real* reason?"; exit }
 		if(s ~ /(mother|father|family)/) { print "Tell me more about your family."; exit }
-		if(s ~ /(9p|plan 9|rc)/)         { print "Ah, a person of taste. Everything is a file:\n\n```rc\necho hello >/mnt/gpui/windows/main/root/text\n```"; exit }
+		if(s ~ /(9p|plan 9|rc)/)         { print "Ah, a person of taste. Everything is a file:\n\n```rc\necho set . text=hello >$ui/win/main/ctl\n```"; exit }
 		if(s ~ /\?$/)                    { print "Why do you ask?"; exit }
 		n = split("Please go on.|I see.|What does that suggest to you?|Can you elaborate on that?", r, "|")
 		srand(); print r[int(rand() * n) + 1]
@@ -72,31 +71,25 @@ fn eliza {
 
 say assistant 'Hello, I''m **Eliza**. How are you feeling today?'
 
-cat $k/events | while(ev=`{read}){
-	switch($ev(1)){
-	case click submit
-		x=`{attr tag}
-		switch($x){
-		case send
-			m=`{cat $r/compose/in/value}
-			if(! ~ $#m 0){
-				echo -n >$r/compose/in/value
-				say user $"m
-				echo typing… >$r/head/n/st/text
-				say assistant '_…_'
-				sleep 1
-				unsay
-				eliza $"m | say assistant
-				echo online >$r/head/n/st/text
-			}
-		case clear
-			>$log
-			cat $log >$M/items
-		case raw
-			cat $log >$w/overlays/raw/e/value
-			echo open >$w/overlays/raw/ctl
+cat $ui/events | while(ev=`{read}){
+	switch($ev(1)^:^$ev(2)){
+	case click:send submit:send
+		t=`{cat $m/compose/in/value}
+		if(! ~ $#t 0){
+			echo -n >$m/compose/in/value
+			say user $"t
+			echo typing… >$m/head/n/st/text
+			say assistant '_…_'
+			sleep 1
+			unsay
+			eliza $"t | say assistant
+			echo online >$m/head/n/st/text
 		}
-	case *
-		stdquit
+	case click:clear
+		>$log
+		cat $log >$M/items
+	case click:raw
+		cat $log >$m/over/raw/e/value
+		echo open >$m/over/raw/ctl
 	}
 }

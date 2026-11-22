@@ -2,44 +2,44 @@
 # stocks.rc: a live quote board, after GPUI Kit's real-time table story.
 # Prices move every second; pick a row to chart it.
 #
-#	gpuifs -t Stocks rc stocks.rc
+#	uitreefs -t Stocks rc stocks.rc
 #
 # Shows: a background rc process rewriting a table's rows every second
 # while the user scrolls, sorts and selects (all of which stay in the host:
 # rows keep their ids, so selection survives each rewrite), host-side
-# sorting with sorted=on, a line chart fed from TSV, description-list,
+# sorting with sorted=on, a line chart fed from awk, description-list,
 # a switch that pauses the feed. Two rc processes share state through
 # files in /tmp, the Plan 9 way.   Needs: M3
 . ./lib.rc
 
-echo 'window main title=Stocks size=1000,640 min=720,480 pos=center' >$k/ctl
-r=$k/windows/main/root
+m=$ui/win/main
+echo 'set . title=Stocks size=1000,640 min=720,480 pos=center' >$m/ctl
 
-cat >$r/tree <<'END'
-div root  style='v_flex size_full bg=background'
+cat >$m/tree <<'END'
+div root  : v_flex size_full bg=background
   toolbar bar
-    text t  style='text_lg font_semibold px=8'  text=Watchlist
+    text t  text=Watchlist  : text_lg font_semibold px=8
     spacer s
     switch live  label=Live  value=on  tag=live
-  resizable split  dir=v  style=flex_1
+  resizable split  dir=col  : flex_1
     panel top
-      table quotes  stripe=on  selectable=row  sortable=on  sorted=on  style=size_full
+      table quotes  stripe  sortable  sorted  selectable=row  tag=quotes  : size_full
     panel bottom  size=240  min=160
-      div detail  style='h_flex items_stretch size_full gap=16 p=16'
-        chart price  kind=line  x=t  y=price  style=flex_1
-        description-list facts  columns=1  bordered=on  style=w=260
+      div detail  : h_flex items_stretch size_full gap=16 p=16
+        chart price  kind=line  x=t  y=price  : flex_1
+        description-list facts  bordered  columns=1  : w=260
   status-bar st
-    text left  style='text_xs text_color=muted_foreground'
+    text left  : text_xs text_color=muted_foreground
 END
-Q=$r/split/top/quotes
-D=$r/split/bottom/detail
-tsv >$Q/columns <<'END'
-sym  | Symbol | 90  | sort | fixed
-name | Name   | 240 | sort
-px   | Price  | 100 | sort | align=right
-chg  | Change | 100 | sort | align=right
-pct  | %      | 90  | sort | align=right
-vol  | Volume | 120 | sort | align=right
+Q=$m/split/top/quotes
+D=$m/split/bottom/detail
+cat >$Q/columns <<'END'
+sym  Symbol 90  sort fixed
+name Name   240 sort
+px   Price  100 sort align=right
+chg  Change 100 sort align=right
+pct  %      90  sort align=right
+vol  Volume 120 sort align=right
 END
 
 # sym name price open volume
@@ -72,35 +72,26 @@ fn tick {
 	s=`{cat /tmp/sel}
 	t=`{date | awk '{ print $4 }'}
 	grep '^'$s' ' /tmp/quotes | awk -v 't='$t '{ print t, $3 }' >>/tmp/hist.$s
-	{ echo 't	price'; tail -60 /tmp/hist.$s | tsvspace } >$D/price/data
+	{ echo t price; tail -60 /tmp/hist.$s } >$D/price/data
 	grep '^'$s' ' /tmp/quotes | awk 'BEGIN { OFS = "\t" } {
 		print "Symbol", $1; print "Open", $4; print "Last", $3
 		printf "Change\t%+.2f%%\n", 100 * ($3 - $4) / $4; print "Volume", $5
 	}' >$D/facts/items
-	echo 'Updated '^$t >$r/st/left/text
-}
-fn tsvspace {
-	awk 'BEGIN { OFS = "\t" } { $1 = $1; print }'
+	echo 'Updated '^$t >$m/st/left/text
 }
 
 tick
 { while(sleep 1) if(! test -f /tmp/paused) tick } &
 feed=$apid
 
-cat $k/events | while(ev=`{read}){
-	switch($ev(1)){
-	case select
-		if(has 'node=root/split/top/quotes'){
-			attr row >/tmp/sel
-			tick
-		}
-	case change
-		if(has 'tag=live'){
-			if(~ `{attr value} on) rm -f /tmp/paused
-			if not touch /tmp/paused
-		}
-	case *
-		stdquit
+cat $ui/events | while(ev=`{read}){
+	switch($ev(1)^:^$ev(2)){
+	case select:quotes
+		attr row >/tmp/sel
+		tick
+	case change:live
+		if(~ `{attr value} on) rm -f /tmp/paused
+		if not touch /tmp/paused
 	}
 }
 echo kill >/proc/$feed/note

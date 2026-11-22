@@ -1,10 +1,10 @@
 -- window main planets.csv
-div root  style='v_flex size_full bg=background'
-  div top  style='h_flex items_center gap=8 p=12 border_b_1 border_color=border'
-    text name  style='font_semibold flex_1'  text=planets.csv
-    input q  placeholder=Filter…  flags=cleanable  style=w=260
+div root  : v_flex size_full bg=background
+  div top  : h_flex items_center gap=8 p=12 border_b_1 border_color=border
+    text name  text=planets.csv  : font_semibold flex_1
+    input q  cleanable  placeholder=Filter…  tag=filter  : w=260
       icon prefix  name=search
-  table t  stripe=on  sortable=on  sorted=on  resizable=on  style=flex_1  columns=<<END  rows=<<END
+  table t  stripe  sortable  sorted  resizable  tag=table  columns=<<END  rows=<<END  : flex_1
 c1	Planet	180	sort
 c2	Type	180	sort
 c3	Mass (Earth=1)	156	sort	align=right
@@ -27,11 +27,11 @@ c7	Year (days)	132	sort	align=right
 
   END
   status-bar st
-    text left  style='text_xs text_color=muted_foreground'  text='10 rows'
+    text left  text='10 rows'  : text_xs text_color=muted_foreground
 -- overlay main/card
 sheet card  size=380
-  description-list facts  columns=1  bordered=on
--- keymap
+  description-list facts  bordered  columns=1
+-- keys
 cmd-f find
 escape clear
 -- stderr

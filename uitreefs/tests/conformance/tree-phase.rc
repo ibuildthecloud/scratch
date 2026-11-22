@@ -9,7 +9,7 @@
 # (an .rc file name alone means rc NAME). The example runs in the
 # background; once its windows' trees stop changing (two reads half a second
 # apart agree, for up to 15 seconds) this prints each window's title and
-# tree, the menus, the keymap and anything the example wrote to standard
+# tree, the menus, the key bindings and anything the example wrote to standard
 # error, which in the tree-building phase means a write the tree refused.
 # Then it quits the app, as a user would.
 . tests/conformance/lib.rc
@@ -48,7 +48,7 @@ for(m in `{ls -p $k/menu}) {
 	echo '-- menu' $m
 	cat $k/menu/$m
 }
-echo '-- keymap'
+echo '-- keys'
 cat $k/keys
 echo '-- stderr'
 cat /tmp/ex.err

@@ -2,12 +2,13 @@
 // once, then moves three hands each second with one short ctl write each.
 //
 //	GOOS=plan9 GOARCH=amd64 CGO_ENABLED=0 go build -o clock .
-//	gpuifs -t Clock ./clock
+//	uitreefs -t Clock ./clock
 //
 // Shows: canvas ops written once and then edited by id with set, theme
 // tokens for every color (switch the system to dark mode and the clock
 // follows), hover:fill= on the center dot with no round trip, a goroutine
-// on the events file beside a ticker, a digital readout as a text node.
+// on the events file beside a ticker, a digital readout set with one
+// window ctl write per second. Closing the window quits by itself.
 // Needs: M4
 package main
 
@@ -20,7 +21,7 @@ import (
 	"time"
 )
 
-var k = env("gpuifs", "/mnt/gpui")
+var ui = env("ui", "/mnt/ui")
 
 const (
 	size = 280.0
@@ -28,12 +29,12 @@ const (
 )
 
 func main() {
-	put("ctl", "window main title=Clock size=320,380 resizable=off pos=center")
-	r := "windows/main/root"
-	put(r+"/tree", `div root  style='v_flex size_full items_center justify_center gap=12 bg=background'
-  canvas face  style='size=280'  on=click
-  text time  style='text_2xl font_semibold font_family=monospace'
-  text date  style='text_sm text_color=muted_foreground'
+	r := "win/main"
+	put(r+"/ctl", "set . title=Clock size=320,380 resizable=off pos=center")
+	put(r+"/tree", `div root  : v_flex size_full items_center justify_center gap=12 bg=background
+  canvas face  on=click  : size=280
+  text time  : text_2xl font_semibold font_family=monospace
+  text date  : text_sm text_color=muted_foreground
 `)
 
 	var ops strings.Builder
@@ -63,8 +64,8 @@ func main() {
 		put(r+"/face/ctl", "set hour "+geom(h*math.Pi/6, c*0.5)+"\n"+
 			"set min "+geom(m*math.Pi/30, c*0.75)+"\n"+
 			"set sec "+geom(s*math.Pi/30, c*0.85))
-		put(r+"/time/text", now.Format("15:04:05"))
-		put(r+"/date/text", now.Format("Monday, 2 January"))
+		put(r+"/ctl", "set time text="+now.Format("15:04:05")+"\n"+
+			"set date text='"+now.Format("Monday, 2 January")+"'")
 	}
 }
 
@@ -92,25 +93,20 @@ func hand(id string, a, r float64, col string, w float64) string {
 	return fmt.Sprintf("path %s %s stroke=%s width=%g cap=round\n", id, geom(a, r), col, w)
 }
 
-// events quits on close or quit, and exits when the stream ends.
+// events exits when the stream ends: the app quit.
 func events() {
-	f, err := os.Open(k + "/events")
+	f, err := os.Open(ui + "/events")
 	check(err)
-	in := bufio.NewReaderSize(f, 8192)
+	in := bufio.NewReader(f)
 	for {
-		line, err := in.ReadString('\n')
-		if err != nil {
+		if _, err := in.ReadString('\n'); err != nil {
 			os.Exit(0)
-		}
-		switch strings.Fields(line)[0] {
-		case "close", "quit":
-			put("ctl", "quit")
 		}
 	}
 }
 
 func put(file, s string) {
-	f, err := os.OpenFile(k+"/"+file, os.O_WRONLY|os.O_TRUNC, 0)
+	f, err := os.OpenFile(ui+"/"+file, os.O_WRONLY|os.O_TRUNC, 0)
 	check(err)
 	_, err = f.WriteString(s)
 	check(err)

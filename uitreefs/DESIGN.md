@@ -684,7 +684,7 @@ text   lbl     28 44         'Revenue'  size=13 color=muted_foreground
 image  logo    360 12 24 24  src=@logo
 ```
 
-Each line is `kind id geometry attrs`. Colors are theme tokens or literals. Writing `ops` replaces the list. The canvas's own `ctl` changes items by ID: `set dot 150 140`, `add`, `del`, `raise`, `lower`. So moving one item costs one short write, not a new picture. (On a canvas's own `ctl`, `set` edits an item; its node props are set from the window's `ctl`, `set chart style=...`.) A `pixels` file takes raw RGBA at the canvas's size, for clients that render images themselves.
+Each line is `kind id geometry attrs`. Colors are theme tokens or literals. Writing `ops` replaces the list. The canvas's own `ctl` changes items by ID: `set dot 150 140`, `add`, `del`, `raise`, `lower`. So moving one item costs one short write, not a new picture. (On a canvas's own `ctl`, `set` edits an item; its node props are set from the window's `ctl`, `set chart : h=200`.) A `pixels` file takes raw RGBA at the canvas's size, for clients that render images themselves.
 
 Pointer input follows the `on` file, as for any element: `mouse_down`, `mouse_up` and `click` are action events, and `move` and `drag` are coalesced. Events name the item under the pointer: `mouse_down - chart win=main item=dot x=141 y=150 button=left`. Hit testing runs in the host, so an item can have `hover:fill=accent` with no round trip.
 
@@ -806,7 +806,7 @@ uitreefs is gpuifs renamed, with the protocol reworked from what its 24 example 
 | `$gpuifs/windows/main/root/f/emp/in` | `$ui/win/main/f/emp/in` |
 | `overlays/` `keymap` `menus/` `clipboard` `clipboard-files` `drags/` `assets/` | `over/` `keys` `menu/` `clip` `clipfiles` `drag/` `asset/` |
 | A node's `ctl` takes only `new NAME` and `delete NAME` | Any `ctl` takes `set`/`new`/`delete`/`tree` by path, with here-values |
-| `style='''v_flex gap=4'''` | `: v_flex gap=4` |
+| `style='v_flex gap=4'` | `: v_flex gap=4` |
 | `stripe=on`, `flags=secret` | `stripe`, `secret` |
 | `form layout=h`, `dir=h\|v`, `diff layout=` | `form labels=side`, `dir=row\|col` (and `form dir=` arranges fields), `diff view=` |
 | Data lines must be TSV | A line without tabs is Plan 9 words |

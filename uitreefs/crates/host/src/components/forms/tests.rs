@@ -53,7 +53,7 @@ fn every_form_type_renders(cx: &mut TestAppContext) {
   calendar cal  value=2026-11-21
   color-picker col  value=#0b5cffff
   rating r  max=5  value=3
-  form f  layout=h  label_width=120
+  form f  labels=side  label_width=120
     field name  label=Name  required=on  error='Needed'
       input in
   field lone  label=Alone  description=Hint
@@ -82,8 +82,8 @@ fn button_click(cx: &mut TestAppContext) {
     h.click(&format!("{R}/save"));
     h.click(&format!("{R}/off"));
     let lines = h.events(&mut ev);
-    assert_has(&lines, "click ", &["node=root/save", "tag=save"]);
-    assert!(!has(&lines, "click ", &["node=root/off"]), "{lines:?}");
+    assert_has(&lines, "click ", &[" save win=", " save "]);
+    assert!(!has(&lines, "click ", &[" off win="]), "{lines:?}");
 }
 
 #[gpui::test]
@@ -95,9 +95,9 @@ fn checkbox_switch_toggle_change(cx: &mut TestAppContext) {
     h.click(&format!("{R}/sw"));
     h.click(&format!("{R}/tg"));
     let lines = h.events(&mut ev);
-    assert_has(&lines, "change ", &["node=root/cb", "value=on", "via=user"]);
-    assert_has(&lines, "change ", &["node=root/sw", "value=off", "via=user"]);
-    assert_has(&lines, "change ", &["node=root/tg", "value=on", "via=user"]);
+    assert_has(&lines, "change ", &[" cb win=", "value=on", "via=user"]);
+    assert_has(&lines, "change ", &[" sw win=", "value=off", "via=user"]);
+    assert_has(&lines, "change ", &[" tg win=", "value=on", "via=user"]);
     assert_eq!(h.read(&format!("{R}/cb/value")).as_deref(), Some("on"));
     assert_eq!(h.read(&format!("{R}/sw/value")).as_deref(), Some("off"));
     assert_eq!(h.read(&format!("{R}/tg/value")).as_deref(), Some("on"));
@@ -113,11 +113,11 @@ fn controlled_checkbox_waits_for_the_client(cx: &mut TestAppContext) {
     let mut ev = h.subscribe("events");
     h.click(&format!("{R}/cb"));
     let lines = h.events(&mut ev);
-    assert_has(&lines, "change ", &["node=root/cb", "value=on"]);
+    assert_has(&lines, "change ", &[" cb win=", "value=on"]);
     assert_eq!(h.read(&format!("{R}/cb/value")).as_deref(), Some("off"));
     h.write(&format!("{R}/cb/value"), "on");
     let lines = h.events(&mut ev);
-    assert_has(&lines, "change ", &["node=root/cb", "value=on", "via=ctl"]);
+    assert_has(&lines, "change ", &[" cb win=", "value=on", "via=ctl"]);
 }
 
 #[gpui::test]
@@ -143,10 +143,10 @@ fn input_typing_mirrors_value_without_text_in_events(cx: &mut TestAppContext) {
     assert_eq!(h.read(&format!("{R}/f/name/in/value")).as_deref(), Some("Ada"));
     h.keys("main", "enter");
     let lines = h.events(&mut ev);
-    assert_has(&lines, "change ", &["node=root/f/name/in", "tag=name", "via=user"]);
+    assert_has(&lines, "change ", &[" f/name/in win=", " name ", "via=user"]);
     assert!(!lines.iter().any(|l| l.contains("Ada")), "{lines:?}");
-    assert_has(&lines, "submit ", &["node=root/f/name/in"]);
-    assert_has(&lines, "submit ", &["node=root/f "]);
+    assert_has(&lines, "submit ", &[" f/name/in win="]);
+    assert_has(&lines, "submit ", &[" f win="]);
 }
 
 #[gpui::test]
@@ -165,7 +165,7 @@ fn client_value_write_reaches_the_input(cx: &mut TestAppContext) {
     h.write(&format!("{R}/in/value"), "Hopper");
     let lines = h.events(&mut ev);
     assert!(!has(&lines, "change ", &["via=user"]), "{lines:?}");
-    assert_has(&lines, "change ", &["node=root/in", "via=ctl"]);
+    assert_has(&lines, "change ", &[" in win=", "via=ctl"]);
     assert_eq!(h.read(&format!("{R}/in/value")).as_deref(), Some("Hopper"));
 }
 
@@ -190,7 +190,7 @@ fn number_input_change_has_value(cx: &mut TestAppContext) {
     h.keys("main", "end 5");
     let lines = h.events(&mut ev);
     assert_eq!(h.read(&format!("{R}/n/value")).as_deref(), Some("35"));
-    assert_has(&lines, "change ", &["node=root/n", "value=35"]);
+    assert_has(&lines, "change ", &[" n win=", "value=35"]);
 }
 
 #[gpui::test]
@@ -259,9 +259,9 @@ fn radio_and_rating_clicks(cx: &mut TestAppContext) {
     v.simulate_click(p, gpui::Modifiers::none());
     h.settle();
     let lines = h.events(&mut ev);
-    assert_has(&lines, "change ", &["node=root/size", "value=s"]);
+    assert_has(&lines, "change ", &[" size win=", "value=s"]);
     assert_eq!(h.read(&format!("{R}/size/value")).as_deref(), Some("s"));
-    assert_has(&lines, "change ", &["node=root/r", "value=1"]);
+    assert_has(&lines, "change ", &[" r win=", "value=1"]);
     assert_eq!(h.read(&format!("{R}/r/value")).as_deref(), Some("1"));
 }
 
@@ -282,8 +282,8 @@ fn button_group_and_dropdown(cx: &mut TestAppContext) {
     h.settle();
     let lines = h.events(&mut ev);
     // A single-choice group keeps its one choice.
-    assert_has(&lines, "change ", &["node=root/g", "value=a"]);
-    assert_has(&lines, "click ", &["node=root/more", "tag=more"]);
+    assert_has(&lines, "change ", &[" g win=", "value=a"]);
+    assert_has(&lines, "click ", &[" more win=", " more "]);
 }
 
 /// The gallery's form stories render on screen (examples/rc/gallery).

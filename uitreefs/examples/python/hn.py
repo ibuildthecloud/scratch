@@ -2,18 +2,18 @@
 """hn.py: a Hacker News reader. Top, New and Best stories in a list with
 rich rows; pick one to read its comments; scroll to the end for more.
 
-    gpuifs -t 'Hacker News' --dir ./alpine:#L python3 hn.py
+    uitreefs -t 'Hacker News' --dir ./alpine:#L python3 hn.py
 
-A Linux client: CPython from an Alpine tree, run by h9's Linux ABI. It
-assumes /mnt/gpui is visible to Linux programs, which is DESIGN.md open
-question 8; until that is settled it runs against `gpuifs -a` with the
-tree mounted some other way, and k below points there.
+A Linux client: CPython from an Alpine tree, run by h9's Linux ABI, where
+the tree is at $ui as for a Plan 9 client. It needs outbound network to
+the Hacker News API.
 
-Shows: a list with a row template stamped from TSV fields (100 stories
+Shows: a list with a row template stamped from item fields (100 stories
 are one file), loading and scrolled_to_end paging, tabs switching feeds,
 html for comment bodies (HN returns HTML), links the host opens itself,
 work on a background thread while the event loop stays responsive, a
-standard-library-only client.   Needs: M3
+standard-library-only client. Events are split with str.split(): the
+name, key and path come first.   Needs: M3
 """
 import json
 import os
@@ -24,45 +24,45 @@ import urllib.parse
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor
 
-K = os.environ.get("gpuifs", "/mnt/gpui")
+UI_ROOT = os.environ.get("ui", "/mnt/ui")
 API = "https://hacker-news.firebaseio.com/v0"
 PAGE = 30
 
 UI = """\
-div root  style='v_flex size_full bg=background'
-  div top  style='h_flex items_center gap=12 px=16 py=8 border_b_1 border_color=border'
-    text logo  style='font_bold text_color=primary'  text=HN
-    tabs feed  value=top  style='pill sm'
+div root  : v_flex size_full bg=background
+  div top  : h_flex items_center gap=12 px=16 py=8 border_b_1 border_color=border
+    text logo  text=HN  : font_bold text_color=primary
+    tabs feed  value=top  : pill sm
       tab top  label=Top
       tab new  label=New
       tab best  label=Best
     spacer s
-    button refresh  icon=refresh-cw  style='ghost sm'  tag=refresh
-  resizable split  dir=h  style=flex_1
+    button refresh  icon=refresh-cw  tag=refresh  : ghost sm
+  resizable split  dir=row  : flex_1
     panel left  size=440  min=300
-      list stories  selectable=on  loading=on  style=size_full
-        div row  style='v_flex gap=2 px=12 py=8'
-          text title  style='text_sm font_medium'  text={title}
-          text meta  style='text_xs text_color=muted_foreground'  text='{score} points by {by} · {comments} comments · {site}'
+      list stories  selectable  loading  : size_full
+        div row  : v_flex gap=2 px=12 py=8
+          text title  text={title}  : text_sm font_medium
+          text meta  text='{score} points by {by} · {comments} comments · {site}'  : text_xs text_color=muted_foreground
     panel right
-      scroll read  style='size_full overflow_y_scroll p=24'
+      scroll read  : size_full overflow_y_scroll p=24
         empty none  title='Pick a story'  icon=newspaper
 """
 
 STORY = """\
-scroll read  style='size_full overflow_y_scroll p=24'
-  div v  style='v_flex gap=16 max_w=720'
-    text title  style='text_xl font_semibold'
-    link url  style=text_sm
-    text meta  style='text_sm text_color=muted_foreground'
+scroll read  : size_full overflow_y_scroll p=24
+  div v  : v_flex gap=16 max_w=720
+    text title  : text_xl font_semibold
+    link url  : text_sm
+    text meta  : text_sm text_color=muted_foreground
     separator s
-    div comments  style='v_flex gap=16'
+    div comments  : v_flex gap=16
 """
 
 
 def put(path, data):
     """One open, one write, one close: text and data files apply at close."""
-    fd = os.open(f"{K}/{path}", os.O_WRONLY | os.O_TRUNC)
+    fd = os.open(f"{UI_ROOT}/{path}", os.O_WRONLY | os.O_TRUNC)
     try:
         os.write(fd, data.encode() if isinstance(data, str) else data)
     finally:
@@ -70,7 +70,7 @@ def put(path, data):
 
 
 def get(path):
-    with open(f"{K}/{path}") as f:
+    with open(f"{UI_ROOT}/{path}") as f:
         return f.read()
 
 
@@ -79,27 +79,6 @@ def quote(s):
     if s and not re.search(r"[\s'=]", s):
         return s
     return "'" + s.replace("'", "''") + "'"
-
-
-def tokenize(line):
-    words, w, inq, have, i = [], [], False, False, 0
-    while i < len(line):
-        c = line[i]
-        if c == "'" and inq and line[i + 1 : i + 2] == "'":
-            w.append("'")
-            i += 1
-        elif c == "'":
-            inq, have = not inq, True
-        elif c in " \t\n" and not inq:
-            if have or w:
-                words.append("".join(w))
-            w, have = [], False
-        else:
-            w.append(c)
-        i += 1
-    if have or w:
-        words.append("".join(w))
-    return words
 
 
 def fetch(path):
@@ -119,19 +98,19 @@ class App:
         self.shown = 0
         self.lock = threading.Lock()
         self.pool = ThreadPoolExecutor(8)
-        self.w = "windows/main"
-        self.L = f"{self.w}/root/split/left/stories"
+        self.w = "win/main"
+        self.L = f"{self.w}/split/left/stories"
 
     def start(self):
-        put("ctl", "window main title='Hacker News' size=1100,760 min=700,480 pos=center")
-        put(f"{self.w}/root/tree", UI)
-        put(f"{self.L}/fields", "title\tscore\tby\tcomments\tsite\n")
-        put("keymap", "cmd-r refresh\nj select-next\nk select-prev\n")
+        put(f"{self.w}/ctl", "set . title='Hacker News' size=1100,760 min=700,480 pos=center")
+        put(f"{self.w}/tree", UI)
+        put(f"{self.L}/fields", "title score by comments site\n")
+        put("keys", "cmd-r refresh\nj select-next\nk select-prev\n")
         self.load(self.feed)
 
     def load(self, feed):
         self.feed, self.shown = feed, 0
-        put(f"{self.L}/loading", "on")
+        put(f"{self.w}/ctl", "set split/left/stories loading=on")
         threading.Thread(target=self._load, args=(feed,), daemon=True).start()
 
     def _load(self, feed):
@@ -158,57 +137,58 @@ class App:
                 continue
             site = re.sub(r"^www\.", "", urllib.parse.urlparse(it.get("url", "")).netloc) or "news.ycombinator.com"
             rows.append(f"{i}\t{clean(it.get('title'))}\t{it.get('score', 0)}\t{it.get('by', '')}\t{it.get('descendants', 0)}\t{site}")
+        # Tab-separated lines work as they are; titles hold blanks.
         put(f"{self.L}/items", "\n".join(rows) + "\n")
-        put(f"{self.L}/loading", "off")
+        put(f"{self.w}/ctl", "set split/left/stories loading=off")
 
     def open(self, sid):
         it = self.items.get(int(sid))
         if not it:
             return
-        r = f"{self.w}/root/split/right/read"
-        put(f"{self.w}/ctl", "begin")
-        put(f"{r}/tree", STORY)
-        put(f"{r}/v/title/text", clean(it.get("title")))
         url = it.get("url") or f"https://news.ycombinator.com/item?id={sid}"
-        put(f"{r}/v/url/label", url)
-        put(f"{r}/v/url/href", url)
         when = time.strftime("%b %d, %H:%M", time.localtime(it.get("time", 0)))
-        put(f"{r}/v/meta/text", f"{it.get('score', 0)} points by {it.get('by', '')}, {when}")
-        put(f"{r}/v/comments/ctl", "new spinner wait")
-        put(f"{self.w}/ctl", "commit")
+        meta = f"{it.get('score', 0)} points by {it.get('by', '')}, {when}"
+        # One ctl write: the story's subtree, its text, and a spinner.
+        put(f"{self.w}/ctl", "\n".join([
+            "tree split/right/read <<END", STORY.rstrip("\n"), "END",
+            f"set split/right/read/v/title text={quote(clean(it.get('title')))}",
+            f"set split/right/read/v/url label={quote(url)} href={quote(url)}",
+            f"set split/right/read/v/meta text={quote(meta)}",
+            "new spinner split/right/read/v/comments/wait",
+        ]))
+        r = f"{self.w}/split/right/read"
         threading.Thread(target=self._comments, args=(it, r), daemon=True).start()
 
     def _comments(self, it, r):
         kids = [c for c in self.pool.map(lambda i: fetch(f"item/{i}"), it.get("kids", [])[:20]) if c and not c.get("deleted")]
         c = f"{r}/v/comments"
+        # Every comment in one write; bodies are HTML, so here-values.
         cmds = ["delete wait"]
         for n, k in enumerate(kids):
-            cmds.append(f"new div c{n} style='v_flex gap=4'")
+            cmds += [
+                f"new div c{n} : v_flex gap=4",
+                f"new text c{n}/by text={quote(k.get('by', ''))} : text_xs font_semibold text_color=muted_foreground",
+                f"new html c{n}/body text=<<END_OF_COMMENT",
+                k.get("text", "").replace("\nEND_OF_COMMENT", "\n END_OF_COMMENT"),
+                "END_OF_COMMENT",
+                f"set c{n}/body : text_sm",
+            ]
         put(f"{c}/ctl", "\n".join(cmds))
-        for n, k in enumerate(kids):
-            put(f"{c}/c{n}/ctl", "new text by style='text_xs font_semibold text_color=muted_foreground'\nnew html body style=text_sm")
-            put(f"{c}/c{n}/by/text", k.get("by", ""))
-            put(f"{c}/c{n}/body/text", k.get("text", ""))
 
     def run(self):
-        with open(f"{K}/events", "rb", buffering=65536) as ev:  # reads of at least 8 KiB
-            for raw in ev:
-                w = tokenize(raw.decode())
-                if not w:
-                    continue
-                name, attrs = w[0], dict(x.split("=", 1) for x in w[1:] if "=" in x)
-                node = attrs.get("node", "")
-                if name == "change" and node == "root/top/feed":
+        with open(f"{UI_ROOT}/events") as ev:
+            for line in ev:
+                name, key, path, *rest = line.split()
+                attrs = dict(x.split("=", 1) for x in rest if "=" in x)
+                if name == "change" and path == "top/feed":
                     self.load(attrs["value"])
-                elif name == "select" and node.endswith("/stories"):
+                elif name == "select" and path == "split/left/stories":
                     self.open(attrs["value"])
                 elif name == "scrolled_to_end":
                     threading.Thread(target=self.more, daemon=True).start()
-                elif (name == "click" and attrs.get("tag") == "refresh") or (name == "action" and attrs.get("id") == "refresh"):
+                elif name in ("click", "action") and key == "refresh":
                     self.items.clear()
                     self.load(self.feed)
-                elif name in ("close", "quit"):
-                    put("ctl", "quit")
 
 
 if __name__ == "__main__":

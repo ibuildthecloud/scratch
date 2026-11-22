@@ -128,7 +128,7 @@ fn list_click_selects_and_double_click_opens(cx: &mut TestAppContext) {
     // Items are the same height; the second one is below the first.
     click_at(&mut h, x + w / 2., y + 10., 1);
     let lines = h.events(&mut ev);
-    assert!(has(&lines, "select ", &["node=root/l", "value=a", "tag=pick", "via=user"]), "{lines:?}");
+    assert!(has(&lines, "select ", &[" l win=", "value=a", " pick ", "via=user"]), "{lines:?}");
     assert_eq!(h.read(&format!("{R}/l/value")).as_deref(), Some("a"));
     click_at(&mut h, x + w / 2., y + 10., 2);
     let lines = h.events(&mut ev);
@@ -220,7 +220,7 @@ fn table_click_selects_row_and_sorted_on_sorts(cx: &mut TestAppContext) {
     let row_h = 32.;
     click_at(&mut h, x + 50., y + row_h * 1.5, 1);
     let lines = h.events(&mut ev);
-    assert!(has(&lines, "select ", &["node=root/t", "row=1", "tag=files"]), "{lines:?}");
+    assert!(has(&lines, "select ", &[" t win=", "row=1", " files "]), "{lines:?}");
     assert_eq!(h.read(&format!("{R}/t/value")).as_deref(), Some("1"));
     click_at(&mut h, x + 50., y + row_h * 1.5, 2);
     let lines = h.events(&mut ev);
@@ -346,13 +346,13 @@ fn tag_and_alert_close(cx: &mut TestAppContext) {
             break;
         }
     }
-    assert!(has(&lines, "close ", &["node=root/g"]), "{lines:?}");
+    assert!(has(&lines, "close ", &[" g win="]), "{lines:?}");
     // The alert's close button is at its top right.
     let [x, y, w, _] = h.bounds(&format!("{R}/a"));
     let before = h.bounds(&format!("{R}/a"));
     for dx in [12., 16., 20., 24., 28.] {
         click_at(&mut h, x + w - dx, y + 16., 1);
-        if h.events(&mut ev).iter().any(|l| l.starts_with("close ") && l.contains("node=root/a")) {
+        if h.events(&mut ev).iter().any(|l| l.starts_with("close ") && l.contains(" a win=")) {
             // Hidden now; a write shows it again.
             h.write(&format!("{R}/a/text"), "Again");
             assert_eq!(h.bounds(&format!("{R}/a"))[3], before[3]);
@@ -397,7 +397,7 @@ fn tree_document_with_data_types(cx: &mut TestAppContext) {
 
 /// The gallery example's data stories (examples/rc/gallery), written as
 /// gallery.rc does: the story's `tree` document into the story node, then
-/// its files at the same relative paths (`.tsv` through `tsv`).
+/// its files at the same relative paths, as written (Plan 9 words).
 #[gpui::test]
 fn gallery_data_stories_render(cx: &mut TestAppContext) {
     macro_rules! g {
@@ -405,13 +405,7 @@ fn gallery_data_stories_render(cx: &mut TestAppContext) {
             include_str!(concat!("../../../../../examples/rc/gallery/", $p))
         };
     }
-    fn tsv_of(s: &str) -> String {
-        s.lines()
-            .filter(|l| !l.trim().is_empty())
-            .map(|l| l.split('|').map(str::trim).collect::<Vec<_>>().join("\t") + "\n")
-            .collect()
-    }
-    type Files = &'static [(&'static str, &'static str, bool)];
+    type Files = &'static [(&'static str, &'static str)];
     let stories: &[(&str, &str, Files)] = &[
         ("badge", g!("badge/tree"), &[]),
         ("progress", g!("progress/tree"), &[]),
@@ -421,39 +415,38 @@ fn gallery_data_stories_render(cx: &mut TestAppContext) {
             "chart",
             g!("chart/tree"),
             &[
-                ("v/line/data", g!("chart/v/line/data.tsv"), true),
-                ("v/bar/data", g!("chart/v/bar/data.tsv"), true),
-                ("v/area/data", g!("chart/v/area/data.tsv"), true),
-                ("v/pie/data", g!("chart/v/pie/data.tsv"), true),
+                ("v/line/data", g!("chart/v/line/data")),
+                ("v/bar/data", g!("chart/v/bar/data")),
+                ("v/area/data", g!("chart/v/area/data")),
+                ("v/pie/data", g!("chart/v/pie/data")),
             ],
         ),
         (
             "table",
             g!("table/tree"),
             &[
-                ("t/columns", g!("table/t/columns.tsv"), true),
-                ("t/rows", g!("table/t/rows.tsv"), true),
+                ("t/columns", g!("table/t/columns")),
+                ("t/rows", g!("table/t/rows")),
             ],
         ),
         (
             "tree",
             g!("treeview/tree"),
             &[
-                ("t/items", g!("treeview/t/items.tsv"), true),
-                ("t/expanded", g!("treeview/t/expanded"), false),
+                ("t/items", g!("treeview/t/items")),
+                ("t/expanded", g!("treeview/t/expanded")),
             ],
         ),
     ];
     let mut h = window(cx);
-    h.ctl(R, "new scroll story style='flex_1 overflow_y_scroll p=24'");
+    h.ctl(R, "new scroll story : flex_1 overflow_y_scroll p=24");
     let s = format!("{R}/story");
     for (name, doc, files) in stories {
         if let Err(e) = h.try_write(&format!("{s}/tree"), doc) {
             panic!("{name}/tree: {e}");
         }
-        for (f, body, is_tsv) in files.iter() {
-            let body = if *is_tsv { tsv_of(body) } else { body.to_string() };
-            if let Err(e) = h.try_write(&format!("{s}/{f}"), &body) {
+        for (f, body) in files.iter() {
+            if let Err(e) = h.try_write(&format!("{s}/{f}"), body) {
                 panic!("{name}/{f}: {e}");
             }
         }

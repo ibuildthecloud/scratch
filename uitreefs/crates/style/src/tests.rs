@@ -116,6 +116,21 @@ fn style_values(text: &str) -> Vec<String> {
             };
             out.push(value.to_string());
         }
+        // The style words after a lone `:` on a node line (`new div x : v_flex`,
+        // `div root  : h_flex` in a tree document).
+        if let Some(at) = line.find(" : ") {
+            let before = &line[..at];
+            let node_line = before.ends_with(' ')
+                || before.contains("new ")
+                || before.contains("set ");
+            let comment = ["--", "#", "//", "*"].iter().any(|c| line.trim_start().starts_with(c));
+            let v = if node_line && !comment && !before.contains('?') { &line[at + 3..] } else { "" };
+            let v = v.split(['\'', '"', '\\', '`', '}', ')', ']']).next().unwrap_or("");
+            let v = v.trim_end_matches('/');
+            if !v.trim().is_empty() {
+                out.push(v.trim().to_string());
+            }
+        }
         if let Some(at) = line.find("/style") {
             let after = &line[at + 6..];
             if after.starts_with(|c: char| c.is_alphanumeric() || c == '_') {

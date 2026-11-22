@@ -60,7 +60,7 @@ fn click_and_hover_send_events_with_tag(cx: &mut TestAppContext) {
     assert!(
         lines
             .iter()
-            .any(|l| l.starts_with("click ") && l.contains("node=root/card") && l.contains("tag=open:42")),
+            .any(|l| l.starts_with("click ") && l.contains(" card win=") && l.contains(" open:42 ")),
         "{lines:?}"
     );
     assert!(lines.iter().any(|l| l.starts_with("hover ") && l.contains("value=on")), "{lines:?}");
@@ -84,7 +84,7 @@ fn key_events_and_focus_file(cx: &mut TestAppContext) {
     h.write(&format!("{R}/k/on"), "key focus click");
     let mut ev = h.subscribe("events");
     h.click(&format!("{R}/k"));
-    assert_eq!(h.read(&format!("{W}/focus")).as_deref(), Some("root/k"));
+    assert_eq!(h.read(&format!("{W}/focus")).as_deref(), Some("k"));
     h.keys("main", "a");
     let lines = h.events(&mut ev);
     assert!(lines.iter().any(|l| l.starts_with("focus ")), "{lines:?}");
@@ -96,8 +96,8 @@ fn focus_file_write_moves_focus(cx: &mut TestAppContext) {
     let mut h = window(cx);
     h.ctl(R, "new div a style='w=10 h=10'\nnew div b style='w=10 h=10'");
     h.write(&format!("{R}/b/on"), "focus");
-    h.write(&format!("{W}/focus"), "root/b");
-    assert_eq!(h.read(&format!("{W}/focus")).as_deref(), Some("root/b"));
+    h.write(&format!("{W}/focus"), "b");
+    assert_eq!(h.read(&format!("{W}/focus")).as_deref(), Some("b"));
 }
 
 #[gpui::test]
@@ -108,7 +108,7 @@ fn keymap_binding_sends_action(cx: &mut TestAppContext) {
     h.keys("main", "ctrl-s");
     let lines = h.events(&mut ev);
     assert!(
-        lines.iter().any(|l| l.starts_with("action ") && l.contains("id=save") && l.contains("win=main")),
+        lines.iter().any(|l| l.starts_with("action save . win=main")),
         "{lines:?}"
     );
 }
@@ -122,14 +122,14 @@ fn keymap_context_limits_binding(cx: &mut TestAppContext) {
     h.write(&format!("{R}/other/on"), "key focus");
     h.write("keymap", "ctrl-e escape-ed context=editor\n");
     let mut ev = h.subscribe("events");
-    h.write(&format!("{W}/focus"), "root/other");
+    h.write(&format!("{W}/focus"), "other");
     h.keys("main", "ctrl-e");
-    assert!(!h.events(&mut ev).iter().any(|l| l.contains("id=escape-ed")));
-    h.write(&format!("{W}/focus"), "root/ed");
+    assert!(!h.events(&mut ev).iter().any(|l| l.starts_with("action escape-ed ")));
+    h.write(&format!("{W}/focus"), "ed");
     h.keys("main", "ctrl-e");
     let lines = h.events(&mut ev);
     assert!(
-        lines.iter().any(|l| l.contains("id=escape-ed") && l.contains("focus=root/ed")),
+        lines.iter().any(|l| l.starts_with("action escape-ed ed win=main")),
         "{lines:?}"
     );
 }
@@ -141,7 +141,7 @@ fn disabled_action_sends_nothing(cx: &mut TestAppContext) {
     h.ctl("", "set save enabled=off");
     let mut ev = h.subscribe("events");
     h.keys("main", "ctrl-s");
-    assert!(!h.events(&mut ev).iter().any(|l| l.contains("id=save")));
+    assert!(!h.events(&mut ev).iter().any(|l| l.starts_with("action save ")));
 }
 
 #[gpui::test]
@@ -153,7 +153,7 @@ fn menus_build(cx: &mut TestAppContext) {
     );
     let mut ev = h.subscribe("events");
     h.keys("main", "ctrl-n");
-    assert!(h.events(&mut ev).iter().any(|l| l.contains("id=new")));
+    assert!(h.events(&mut ev).iter().any(|l| l.starts_with("action new ")));
 }
 
 #[gpui::test]

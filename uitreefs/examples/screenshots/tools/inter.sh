@@ -1,7 +1,7 @@
 # Usage: inter.sh EXAMPLE  (counter hello signin todo calc confirm chat gallery settings settings-dark stocks paint files dock notes)
 # Runs one rc example in gpuifs under Xvfb, drives it with xdotool and writes PNG/GIF captures.
 . $(dirname "$0")/lib.sh
-cd $GPUIFS_DIR/examples/rc
+cd $UITREEFS_DIR/examples/rc
 typ() { xdotool type --delay 70 "$1"; }
 drag() { xdotool mousemove $((X+$1)) $((Y+$2)) mousedown 1; shift 2; while [ $# -gt 1 ]; do xdotool mousemove $((X+$1)) $((Y+$2)); sleep 0.05; shift 2; done; xdotool mouseup 1; }
 run() { n=$1; shift; start $n 120 $G "$@"; waitwin 40 || { echo "$n: no window"; return 1; }; sleep 6; }
@@ -21,7 +21,7 @@ paint) run paint -t Paint rc paint.rc; recstart paint; drag 100 200 140 160 180 
 files) run files -t Files rc files.rc; recstart files; click 22 21; sleep 3; click 60 280; sleep 3; xdotool mousemove $((X+60)) $((Y+280)) click --repeat 2 1; sleep 3; recstop files; shot files-browse 0;;
 dock) run dock -t Workspace rc dock.rc; recstart dock; xdotool key ctrl+shift+p; sleep 3; typ "spl"; sleep 2; shot dock-palette 0; xdotool key Escape; sleep 2; recstop dock;;
 notes) run notes -t Notes rc notes.rc; recstart notes; xdotool key ctrl+n; sleep 4; click 500 200; typ "# Hello from h9"; xdotool key Return Return; typ "Written in a GPUI editor, saved by rc."; sleep 1; xdotool key ctrl+s; sleep 3; recstop notes; shot notes-new 0;;
-still) shift; n=$1; d=$2; shift 2; cd $GPUIFS_DIR/examples/$d; start $n 90 $G "$@"; waitwin 60 || exit 1; shot $n 10;;
+still) shift; n=$1; d=$2; shift 2; cd $UITREEFS_DIR/examples/$d; start $n 90 $G "$@"; waitwin 60 || exit 1; shot $n 10;;
 esac
 killall_g
 grep -v "^exit=143" $CAPTMP/${n:-$1}.log | tail -5

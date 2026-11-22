@@ -5,15 +5,15 @@
 # COBOL program and jq are Linux programs, run by h9 on the Alpine root
 # that linuxroot.sh makes ($H9LINUX).
 . $(dirname "$0")/lib.sh
-H9LINUX=${H9LINUX:-$GPUIFS_DIR/third_party/hyper9/.local/linux/edge-tools}
+H9LINUX=${H9LINUX:-$UITREEFS_DIR/third_party/hyper9/.local/linux/edge-tools}
 [ -d "$H9LINUX/usr/bin" ] || { echo "no Linux root at $H9LINUX: run linuxroot.sh" >&2; exit 1; }
 typ() { xdotool type --delay 60 "$1"; }
 run() { n=$1; shift; start $n 300 $G "$@"; waitwin 40 || { echo "$n: no window"; return 1; }; sleep 5; }
 one() {
 case $1 in
 sed-counter)
-	cd $GPUIFS_DIR/examples/sed
-	run counter -t Counter rc -c "echo 'window main title=Counter size=420,240' >/mnt/gpui/ctl; sed -nuf counter.sed /mnt/gpui/events"
+	cd $UITREEFS_DIR/examples/sed
+	run counter -t Counter rc -c "echo 'window main title=Counter size=420,240' >/mnt/ui/ctl; sed -nuf counter.sed /mnt/ui/events"
 	shot sed-counter 0
 	recstart sed-counter
 	for i in $(seq 12); do click 345 80; sleep .3; done; sleep 1
@@ -24,8 +24,8 @@ sed-counter)
 	xdotool key --delay 4 --repeat 2026 equal; sleep 8
 	shot sed-counter-2026 0;;
 ps-stamps)
-	cd $GPUIFS_DIR/examples/ps
-	run stamps -t Stamps --dir $H9LINUX:'#L' sh -c "exec gs -q -dNODISPLAY --permit-file-all='/9/mnt/gpui/*' stamps.ps </9/mnt/gpui/events"
+	cd $UITREEFS_DIR/examples/ps
+	run stamps -t Stamps --dir $H9LINUX:'#L' sh -c "exec gs -q -dNODISPLAY --permit-file-all='/9/mnt/ui/*' stamps.ps </9/mnt/ui/events"
 	recstart ps-stamps
 	click 150 580; sleep 1.5
 	click 440 19; sleep .8; click 330 600; sleep 1.5
@@ -36,7 +36,7 @@ ps-stamps)
 	recstop ps-stamps
 	shot ps-stamps 0;;
 cobol-payroll)
-	cd $GPUIFS_DIR/examples/cobol
+	cd $UITREEFS_DIR/examples/cobol
 	$G --headless --dir $H9LINUX:'#L' cobc -x payroll.cob || exit 1
 	run payroll -t Payroll --dir $H9LINUX:'#L' --env COB_LS_VALIDATE=false ./payroll
 	recstart cobol-payroll
@@ -48,7 +48,7 @@ cobol-payroll)
 	shot cobol-payroll 0
 	rm -f payroll;;
 jq-ttt)
-	cd $GPUIFS_DIR/examples/jq
+	cd $UITREEFS_DIR/examples/jq
 	run ttt -t Tic-tac-toe --dir $H9LINUX:'#L' sh -c 'G=/9$gpuifs; jq -nj --arg window 1 -f ttt.jq >$G/ctl && jq -nRj --unbuffered -f ttt.jq <$G/events >$G/windows/main/root/ctl'
 	recstart jq-ttt
 	cell() { click $((70 + ($1 % 3) * 100)) $((118 + ($1 / 3) * 100)); sleep 1.3; }

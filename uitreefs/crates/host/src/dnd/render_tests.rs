@@ -71,7 +71,7 @@ fn in_app_drag_is_accepted(cx: &mut TestAppContext) {
     let lines = h.events(&mut ev);
     let start = lines.iter().find(|l| l.starts_with("dragstart ")).cloned();
     let start = start.unwrap_or_else(|| panic!("no dragstart: {lines:?}"));
-    assert!(start.contains("node=root/card tag=card"), "{start}");
+    assert!(start.starts_with("dragstart card card win=main"), "{start}");
     let n = attr(&start, "drag").unwrap();
     // The host made /drags/<n> before dragstart; the client fills it.
     assert_eq!(h.read(&format!("drags/{n}/data")).as_deref(), Some(""));
@@ -87,7 +87,7 @@ fn in_app_drag_is_accepted(cx: &mut TestAppContext) {
     let drop = drop.unwrap_or_else(|| panic!("no drop: {lines:?}"));
     assert!(
         drop.starts_with(&format!(
-            "drop win=main node=root/notes tag=pick type=note drag={n} pt="
+            "drop pick notes win=main type=note drag={n} pt="
         )),
         "{drop}"
     );
@@ -105,7 +105,7 @@ fn in_app_drag_is_accepted(cx: &mut TestAppContext) {
     let lines = h.events(&mut ev);
     assert!(
         lines.iter().any(|l| l.starts_with(&format!(
-            "dragend win=main node=root/card tag=card drag={n} result=dropped target=root/notes"
+            "dragend card card win=main drag={n} result=dropped target=notes"
         ))),
         "{lines:?}"
     );
@@ -211,13 +211,13 @@ fn platform_files_are_served_under_drags(cx: &mut TestAppContext) {
     let drop = lines.iter().find(|l| l.starts_with("drop ")).cloned();
     let drop = drop.unwrap_or_else(|| panic!("no drop: {lines:?}"));
     assert!(
-        drop.contains("node=root/notes tag=pick type=files"),
+        drop.starts_with("drop pick notes win=main type=files"),
         "{drop}"
     );
     let n = attr(&drop, "drag").unwrap();
     assert_eq!(
         h.read(&format!("drags/{n}/data")).unwrap(),
-        format!("/mnt/ui/drags/{n}/files/hello.txt\n")
+        format!("/mnt/ui/drag/{n}/files/hello.txt\n")
     );
     let served = h.inner().dnd.served.clone();
     let p = tree::FsPath::new(format!("drags/{n}/files/hello.txt"));

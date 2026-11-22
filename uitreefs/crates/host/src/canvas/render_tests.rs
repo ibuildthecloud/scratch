@@ -87,23 +87,23 @@ fn pointer_events_name_the_item(cx: &mut TestAppContext) {
     let lines = h.events(&mut ev);
     let has = |pre: &str| lines.iter().any(|l| l.starts_with(pre));
     assert!(
-        has("mouse_down win=main node=root/c tag='' item=dot x=141 y=150 button=left"),
+        has("mouse_down - c win=main item=dot x=141 y=150 button=left"),
         "{lines:?}"
     );
     assert!(
-        has("move win=main node=root/c tag='' item=dot x=141 y=150"),
+        has("move - c win=main item=dot x=141 y=150"),
         "{lines:?}"
     );
     assert!(
-        has("drag win=main node=root/c tag='' item=bg x=200 y=250"),
+        has("drag - c win=main item=bg x=200 y=250"),
         "{lines:?}"
     );
     assert!(
-        has("mouse_up win=main node=root/c tag='' item=bg x=200 y=250 button=left"),
+        has("mouse_up - c win=main item=bg x=200 y=250 button=left"),
         "{lines:?}"
     );
     assert!(
-        has("click win=main node=root/c tag='' item=dot x=141 y=150 button=left"),
+        has("click - c win=main item=dot x=141 y=150 button=left"),
         "{lines:?}"
     );
     // The element-tier listeners don't also fire (no second, item-less copy).
