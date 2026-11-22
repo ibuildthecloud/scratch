@@ -45,7 +45,7 @@ BEGIN {
 
 	cols = ""
 	for(i = 1; i <= ncol; i++)
-		cols = cols "c" i "\t" head[i] "\t" (numeric[i] ? 100 : 180) "\tsort" (numeric[i] ? "\talign=right" : "") "\n"
+		cols = cols "c" i "\t" head[i] "\t" width(i) "\tsort" (numeric[i] ? "\talign=right" : "") "\n"
 	put(R "/t/columns", cols)
 	put("windows/main/overlays/ctl", "new sheet card side=right size=380")
 	put("windows/main/overlays/card/ctl", "new description-list facts columns=1 bordered=on")
@@ -92,6 +92,14 @@ function card(id,    f, i, out) {
 }
 
 # put file text: one open, one write, one close
+# A column wide enough for its header: about 8px a character, plus room
+# for the sort arrows.
+function width(i,    w, h) {
+	w = numeric[i] ? 100 : 180
+	h = length(head[i]) * 8 + 44
+	return h > w ? h : w
+}
+
 function put(file, s,    p) {
 	p = k "/" file
 	printf "%s", s > p

@@ -111,6 +111,29 @@ fn prop<'a>(props: &'a [(String, String)], k: &str) -> Option<&'a str> {
     props.iter().find(|(n, _)| n == k).map(|(_, v)| v.as_str())
 }
 
+/// Clients write `cmd-` in keystrokes, as GPUI's keymaps and DESIGN.md do.
+/// GPUI reads `cmd` as the Super key off macOS, which leaves those bindings
+/// unreachable on Linux and Windows, so there it becomes `secondary`: Cmd on
+/// macOS, Ctrl elsewhere.
+pub(crate) fn portable_keys(keys: &str) -> String {
+    if cfg!(target_os = "macos") {
+        return keys.to_string();
+    }
+    keys.split(' ')
+        .map(|stroke| {
+            let parts: Vec<&str> = stroke.split('-').collect();
+            let last = parts.len().saturating_sub(1);
+            parts
+                .iter()
+                .enumerate()
+                .map(|(i, p)| if i < last && p.eq_ignore_ascii_case("cmd") { "secondary" } else { p })
+                .collect::<Vec<_>>()
+                .join("-")
+        })
+        .collect::<Vec<_>>()
+        .join(" ")
+}
+
 /// Rebuilds the client's key bindings: the `keymap` file, plus each menu
 /// item's `key=`. GPUI Kit's own bindings are kept.
 pub(crate) fn set_keymap(inner: &Rc<Inner>, cx: &mut App) {
@@ -127,6 +150,7 @@ pub(crate) fn set_keymap(inner: &Rc<Inner>, cx: &mut App) {
     let mut bindings: Vec<KeyBinding> = inner.base_bindings.borrow().clone().unwrap_or_default();
     let mut add = |keys: &str, id: &str, context: Option<&str>, cx: &App| {
         let pred = context.and_then(|c| KeyBindingContextPredicate::parse(c).ok().map(Rc::new));
+        let keys = &portable_keys(keys);
         match KeyBinding::load(
             keys,
             Box::new(ClientAction { id: id.to_string().into() }),

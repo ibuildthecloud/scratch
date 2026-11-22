@@ -1,5 +1,5 @@
 -- window main Notes
-div root  style='h_flex size_full'
+div root  style='h_flex items_stretch size_full'
   div nav  style='v_flex w=220 border_r_1 border_color=border'
     list notes  searchable=on  selectable=on  tag=pick
   div page  style='v_flex flex_1'

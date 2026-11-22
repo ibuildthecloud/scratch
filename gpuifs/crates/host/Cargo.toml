@@ -26,7 +26,7 @@ anyhow = "1"
 lsp-types = { version = "0.97.0", features = ["proposed"] }
 similar = "2.7"
 # gpui-kit at the same rev as gpui-component: the desktop platform
-# (`gpui_kit::platform::application`), the default icon assets, and the
+# (`gpui_kit::platform::application`), the full Lucide icon set (AllAssets), and the
 # `inspector` feature, which keeps gpui's style reflection table in release
 # builds (the host resolves no-argument style words through it).
 gpui-kit = { git = "https://github.com/longbridge/gpui-component", rev = "cf945af2d6491ff9bc175f3f1656a14793987db2", features = ["inspector"] }

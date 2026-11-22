@@ -1,5 +1,5 @@
 -- window main GPUI Kit Gallery
-div root  style='h_flex size_full bg=background'
+div root  style='h_flex items_stretch size_full bg=background'
   sidebar nav  style=w=230
     div header  style='h_flex items_center gap=8 p=12'
       icon logo  name=layout-dashboard  style='size=18 text_color=primary'

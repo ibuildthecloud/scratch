@@ -265,3 +265,17 @@ fn bordered_bounds_include_the_border(cx: &mut TestAppContext) {
     assert_eq!(h.bounds(&format!("{R}/c"))[2..], [40., 20.]);
     assert_eq!(h.bounds(&format!("{R}/b"))[0], h.bounds(&format!("{R}/c"))[0]);
 }
+
+#[test]
+fn cmd_keys_are_portable() {
+    let k = crate::actions::portable_keys;
+    if cfg!(target_os = "macos") {
+        assert_eq!(k("cmd-shift-p"), "cmd-shift-p");
+    } else {
+        assert_eq!(k("cmd-shift-p"), "secondary-shift-p");
+        assert_eq!(k("cmd-k cmd-s"), "secondary-k secondary-s");
+        assert_eq!(k("cmd--"), "secondary--");
+        assert_eq!(k("ctrl-tab"), "ctrl-tab");
+        assert_eq!(k("cmd"), "cmd");
+    }
+}

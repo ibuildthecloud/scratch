@@ -423,6 +423,11 @@ impl Component for SidebarNode {
         if let Some(f) = footer {
             sb = sb.footer(f);
         }
+        // The Sidebar draws at its own width (255px unless told), so a
+        // `w=` on the node has to reach it, not only the box around it.
+        if let Some(w) = rcx.style_of(node).base.size.width {
+            sb.style().size.width = Some(w);
+        }
         rcx.element_from(node, gpui::div().flex().h_full())
             .child(sb)
             .into_any_element()

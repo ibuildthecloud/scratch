@@ -325,7 +325,7 @@ pub(crate) fn install(opts: HostOptions, cx: &mut App) -> (Rc<Inner>, Arc<HostBa
 
 pub(crate) fn run(opts: HostOptions, start: impl FnOnce(Arc<dyn ninep::FsBackend>) + 'static) {
     gpui_kit::application()
-        .with_assets(gpui_kit::assets::Assets)
+        .with_assets(gpui_kit::assets::AllAssets)
         .run(move |cx| {
             gpui_component::init(cx);
             cx.set_quit_mode(gpui::QuitMode::Explicit);

@@ -18,7 +18,7 @@ echo 'window settings title=Settings size=820,560 min=640,420 pos=center' >$k/ct
 r=$k/windows/settings/root
 
 cat >$r/tree <<'END'
-div root  style='h_flex size_full bg=background'
+div root  style='h_flex items_stretch size_full bg=background'
   sidebar nav  style=w=220  collapsible=off
     sidebar-group g  label=Settings
       sidebar-item general  label=General  icon=settings  active=on  tag=page:general

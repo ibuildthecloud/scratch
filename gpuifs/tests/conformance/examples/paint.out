@@ -3,7 +3,7 @@ div root  style='v_flex size_full bg=background'
   toolbar bar
     button-group color  value=foreground  tag=color
       button foreground  label=Ink
-      button primary  label=Blue
+      button info  label=Blue
       button danger  label=Red
       button success  label=Green
       button warning  label=Amber

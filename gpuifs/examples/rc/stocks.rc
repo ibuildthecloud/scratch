@@ -25,7 +25,7 @@ div root  style='v_flex size_full bg=background'
     panel top
       table quotes  stripe=on  selectable=row  sortable=on  sorted=on  style=size_full
     panel bottom  size=240  min=160
-      div detail  style='h_flex size_full gap=16 p=16'
+      div detail  style='h_flex items_stretch size_full gap=16 p=16'
         chart price  kind=line  x=t  y=price  style=flex_1
         description-list facts  columns=1  bordered=on  style=w=260
   status-bar st

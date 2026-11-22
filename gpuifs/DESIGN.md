@@ -352,7 +352,7 @@ echo 'new button save label=Save style=primary tag=save' >$w/prefs/ok/ctl
 ```rc
 # A settings window: sidebar on the left, the page on the right
 r=windows/settings/root
-echo 'h_flex size_full' >$r/style
+echo 'h_flex items_stretch size_full' >$r/style
 echo 'new sidebar nav
 new div page style=''flex_1 p=24''' >$r/ctl
 echo 'new sidebar-group g label=Settings' >$r/nav/ctl
@@ -537,6 +537,8 @@ escape       dismiss      context=editor
 ctrl-tab     next-tab     context=workspace
 ```
 
+`cmd` means Cmd on macOS and Ctrl on Linux and Windows (GPUI's `secondary`), so one keymap serves every platform; `super` names the Super key there.
+
 A node's `context` file sets its GPUI `key_context`, so `context=editor` binds only while focus is inside a node with that context. Built-in GPUI Kit actions (an input's `select-all`, a list's `select-next`) keep working and are not reported. An action named in the keymap that no built-in handles comes to the client as `action id=save win=main focus=root/src`.
 
 **Menus.** The root `menus/` directory sets the app menu bar (GPUI's `App::set_menus`, a native menu on macOS). Each menu is a file of item lines, which is uxkit's grammar:
@@ -606,7 +608,7 @@ echo 'window main title=Notes size=900,600' >$k/ctl
 w=$k/windows/main
 
 cat >$w/root/tree <<'EOF'
-div root  style='h_flex size_full'
+div root  style='h_flex items_stretch size_full'
   sidebar nav  style=w=220
     list notes  searchable=on  selectable=on  tag=pick
   div page  style='v_flex flex_1'

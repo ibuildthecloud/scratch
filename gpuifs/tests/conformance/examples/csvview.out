@@ -7,11 +7,11 @@ div root  style='v_flex size_full bg=background'
   table t  stripe=on  sortable=on  sorted=on  resizable=on  style=flex_1  columns=<<END  rows=<<END
 c1	Planet	180	sort
 c2	Type	180	sort
-c3	Mass (Earth=1)	100	sort	align=right
-c4	Radius (km)	100	sort	align=right
+c3	Mass (Earth=1)	156	sort	align=right
+c4	Radius (km)	132	sort	align=right
 c5	Moons	100	sort	align=right
-c6	Day (hours)	100	sort	align=right
-c7	Year (days)	100	sort	align=right
+c6	Day (hours)	132	sort	align=right
+c7	Year (days)	132	sort	align=right
 
   END
 1	Mercury	Terrestrial	0.055	2440	0	4222.6	88
