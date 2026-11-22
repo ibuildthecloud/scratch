@@ -60,7 +60,7 @@ cat $k/events | while(ev=`{read}){
 		if(~ $#last 2){
 			x=`{attr x}; y=`{attr y}
 			n=`{add $n 1}
-			echo 'add path p'$n' M'$last(1)','$last(2)' L'$x','$y' stroke='$color' width='$size' cap=round' >$C/ctl
+			echo 'add path p'$n' M'$last(1)^','^$last(2)^' L'$x','$y' stroke='$color' width='$size' cap=round' >$C/ctl
 			echo p$n >>/tmp/stroke.$strokes($#strokes)
 			last=($x $y)
 		}
