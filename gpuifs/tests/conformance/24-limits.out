@@ -1,0 +1,13 @@
+# a ctl write over 64 KiB is too large
+too large
+no
+# one just under it applies
+ok
+yes
+# node depth: the window root and 63 levels below it make 64
+yes
+too large
+no
+# an events read smaller than the next line is a short read
+short read
+exit=0
