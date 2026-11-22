@@ -766,7 +766,7 @@ impl Tree {
         &self.bus
     }
 
-    fn is_frozen(&self, win: &str) -> bool {
+    pub(crate) fn is_frozen(&self, win: &str) -> bool {
         self.batches
             .iter()
             .any(|b| b.scope.as_deref().is_none_or(|w| w == win))

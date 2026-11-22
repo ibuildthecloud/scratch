@@ -120,6 +120,15 @@ fn input_state<T: 'static>(state: Option<&AnyEntity>) -> Option<Entity<TextState
     state.and_then(|s| s.clone().downcast::<TextState<T>>().ok())
 }
 
+/// Focuses a text component's field (the `focus` file names it).
+fn focus_text<T: gpui::Focusable>(state: Option<&AnyEntity>, window: &mut Window, cx: &mut App) -> bool {
+    let Some(ts) = input_state::<T>(state) else { return false };
+    let s = ts.read(cx).state.clone();
+    let h = s.read(cx).focus_handle(cx);
+    h.focus(window, cx);
+    true
+}
+
 /// Pushes a client-written `value` into the state.
 macro_rules! push_value {
     ($node:expr, $ts:expr, $window:expr, $cx:expr) => {{
@@ -142,6 +151,9 @@ fn mask(node: &NodeView) -> Option<MaskPattern> {
 struct InputC;
 impl Component for InputC {
     common!("input");
+    fn focus(&self, state: Option<&AnyEntity>, window: &mut Window, cx: &mut App) -> bool {
+        focus_text::<InputState>(state, window, cx)
+    }
     fn create(&self, node: &NodeView, window: &mut Window, cx: &mut App) -> Option<AnyEntity> {
         let v = value_of(node);
         let max_len = num(node, "max_len").map(|n| n.max(0.) as usize);
@@ -221,6 +233,9 @@ fn auto_grow(node: &NodeView) -> Option<(usize, usize)> {
 struct TextareaC;
 impl Component for TextareaC {
     common!("textarea");
+    fn focus(&self, state: Option<&AnyEntity>, window: &mut Window, cx: &mut App) -> bool {
+        focus_text::<TextareaState>(state, window, cx)
+    }
     fn create(&self, node: &NodeView, window: &mut Window, cx: &mut App) -> Option<AnyEntity> {
         let v = value_of(node);
         let rows = num(node, "rows").map(|n| n.max(1.) as usize);
@@ -282,6 +297,9 @@ impl Component for TextareaC {
 struct NumberInputC;
 impl Component for NumberInputC {
     common!("number-input");
+    fn focus(&self, state: Option<&AnyEntity>, window: &mut Window, cx: &mut App) -> bool {
+        focus_text::<InputState>(state, window, cx)
+    }
     fn create(&self, node: &NodeView, window: &mut Window, cx: &mut App) -> Option<AnyEntity> {
         let v = value_of(node);
         let (min, max) = (num(node, "min"), num(node, "max"));

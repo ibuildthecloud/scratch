@@ -9,7 +9,10 @@ recorded without the pointer. Linux rendering only; nothing here says how the
 macOS host looks.
 
 [tools/all.sh](tools/all.sh) remakes every capture; `tools/inter.sh calc`
-remakes one. Start `Xvfb :99 -screen 0 1440x900x24` first.
+remakes one. Start `Xvfb :99 -screen 0 1440x900x24` first. The sed,
+PostScript, COBOL and jq captures are [tools/more.sh](tools/more.sh)
+(`more.sh all`, or one by name); the last three run Linux programs in h9
+on an Alpine tree that [tools/linuxroot.sh](tools/linuxroot.sh) makes.
 
 ## What ran
 
@@ -33,6 +36,10 @@ remakes one. Start `Xvfb :99 -screen 0 1440x900x24` first.
 | [go/clock](../go/clock/main.go) | ticks | [go-clock.png](go-clock.png), [go-clock.gif](go-clock.gif) |
 | [c/life.c](../c/life.c) | built with 9front's `mk`/6c inside h9, run there | [c-life-running.png](c-life-running.png), [c-life.gif](c-life.gif) |
 | [awk/csvview.awk](../awk/csvview.awk) | table with sorting | [awk-csvview.png](awk-csvview.png) |
+| [sed/counter.sed](../sed/counter.sed) | 9front sed in h9: +, −, Reset and the = key; 2026 presses of = come to MMXXVI | [sed-counter.png](sed-counter.png), [sed-counter-2026.png](sed-counter-2026.png), [sed-counter.gif](sed-counter.gif) |
+| [ps/stamps.ps](../ps/stamps.ps) | Ghostscript 10.08 on Alpine, in h9: trees at two details, a snowflake, a spirograph, glyphs, undo | [ps-stamps.png](ps-stamps.png), [ps-stamps.gif](ps-stamps.gif) |
+| [cobol/payroll.cob](../cobol/payroll.cob) | GnuCOBOL 3.2 on Alpine, built and run in h9: field errors, then three employees paid | [cobol-payroll.png](cobol-payroll.png), [cobol-payroll.gif](cobol-payroll.gif) |
+| [jq/ttt.jq](../jq/ttt.jq) | jq 1.8 on Alpine, in h9: a draw, then jq wins | [jq-ttt-draw.png](jq-ttt-draw.png), [jq-ttt.png](jq-ttt.png), [jq-ttt.gif](jq-ttt.gif) |
 | [python/hn.py](../python/hn.py) | not run: the capture sandbox blocks the HN API host, and its kernel has no 9p filesystem to mount `gpuifs -a` for a host-side Python | — |
 | [sh/progress.sh](../sh/progress.sh) | not run: needs plan9port's `9p` | — |
 
@@ -58,6 +65,17 @@ remakes one. Start `Xvfb :99 -screen 0 1440x900x24` first.
   `info` now.
 - **csvview.awk.** Numeric columns were 100px whatever their header; they
   now widen to fit it.
+
+- **Values written inside begin/commit.** While a batch is open the host
+  renders the frozen tree, so a prop written then reached its component as
+  the frozen value: clearing an input's `value` between `begin` and
+  `commit` left the old text in the field. The commit now hands components
+  every prop that differs from the frozen tree. (Found by payroll.cob,
+  which clears its form inside the batch that shows the pay stub.)
+- **The `focus` file and text inputs.** Writing an input's path to a
+  window's `focus` focused the node's own handle, not the text field
+  inside, so typing went nowhere. Components with a field of their own
+  (input, textarea, number-input) now focus it.
 
 ## Still open
 

@@ -1197,6 +1197,24 @@ fn batch_freezes_then_commits() {
 }
 
 #[test]
+fn batch_commit_replays_props() {
+    // Components saw a batch's prop writes against the frozen tree, so the
+    // commit hands them over again with the committed values.
+    let mut t = app();
+    ok(&mut t, &ctl(R), "new input in");
+    ok(&mut t, &format!("{R}/in/value"), "typed");
+    ok(&mut t, &ctl(W), "begin");
+    ok(&mut t, &format!("{R}/in/value"), "");
+    let ch = ok(&mut t, &ctl(W), "commit");
+    assert!(
+        ch.props.contains(&(format!("{R}/in"), "value".into())),
+        "{:?}",
+        ch.props
+    );
+    assert_eq!(read(&t, &format!("{R}/in/value")), "");
+}
+
+#[test]
 fn batch_abort_restores() {
     let mut t = app();
     ok(&mut t, &ctl(R), "new text keep text=Old");

@@ -238,6 +238,12 @@ pub trait Component: 'static {
         cx: &mut App,
     ) {
     }
+    /// Move keyboard focus into the node's own widget (an input's text
+    /// field), for a write to the window's `focus` file. False if the
+    /// component has none, and the node's generic focus handle is used.
+    fn focus(&self, state: Option<&AnyEntity>, window: &mut Window, cx: &mut App) -> bool {
+        false
+    }
     /// A component verb on the node's ctl, already parsed and validated
     /// against the spec. Also receives answers to requests the component
     /// opened (`close seq=N`, `keep seq=N`, ...), and `open`/`close` for overlays.

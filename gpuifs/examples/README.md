@@ -35,6 +35,10 @@ and shell scripts pass their languages' syntax checks.
 | [awk/csvview.awk](awk/csvview.awk) | awk | CSV viewer | — | client with no libraries, generated columns, host sort, filter, sheet | M3 |
 | [python/hn.py](python/hn.py) | Python | Hacker News reader | a common app type | row templates, paging, html, background threads, a Linux client (OQ8) | M3 |
 | [sh/progress.sh](sh/progress.sh) | bash | Progress window for a long command | `zenity --progress` | host-side client over `gpuifs -a` with plan9port `9p` | M3 |
+| [sed/counter.sed](sed/counter.sed) | sed (9front) | Counter, with the count in Roman numerals | the classic first app | sed's own `w` files as ctl writes, `-u` flushing, decimal arithmetic by substitution, full re-render per event | M3 |
+| [ps/stamps.ps](ps/stamps.ps) | PostScript (Ghostscript) | Stamp fractal trees, Koch snowflakes, spirographs and font glyphs onto a canvas | — | `file` operator for every write, PostScript paths and `charpath` turned into canvas paths with `pathforall`, a Linux client in h9 | M4 |
+| [cobol/payroll.cob](cobol/payroll.cob) | COBOL (GnuCOBOL) | Weekly payroll: pay stub, register, overtime | a classic COBOL job | `SELECT ... ASSIGN` to run-time paths for every file, the events file read as records, field errors, table and description-list as TSV, begin/commit | M3 |
+| [jq/ttt.jq](jq/ttt.jq) | jq | Tic-tac-toe against an unbeatable jq | — | jq as a reducer (`foreach` over event lines), minimax, absolute layout computed in jq, one ctl write per frame | M3 |
 
 The GPUI Kit recreations (gallery, stocks, dock, paint) follow the
 structure of GPUI Kit's story app and GPUI's examples from memory; they are
@@ -52,6 +56,43 @@ GOOS=plan9 GOARCH=amd64 CGO_ENABLED=0 go build -o clock . && gpuifs -t Clock ./c
 
 gpuifs -t CSV awk -f examples/awk/csvview.awk examples/awk/planets.csv
 examples/sh/progress.sh 'Sleeping' sh -c 'for i in 1 2 3 4 5; do echo step $i; sleep 1; done'
+```
+
+### sed, PostScript, COBOL and jq
+
+These four keep the language doing the work, with as little shell as
+possible. Each file's header says exactly what the shell does, and why.
+
+- **sed** is 9front's, inside h9 like the rc examples. sed reads the events
+  file as its input and writes ctl files with `w`. `-u` flushes the `w`
+  files before each read, so one event's output is one ctl write. sed opens
+  its `w` files when it starts, so the launch line's one `echo` makes the
+  window first.
+- **PostScript, COBOL and jq** are Linux programs. h9 runs Linux binaries
+  in the same machine, next to 9front's: `--dir ALPINE:#L` puts an Alpine
+  tree under the Linux view, and there the gpuifs tree is at `/9/mnt/gpui`
+  (`/9` followed by `$gpuifs`), which settles DESIGN.md's open question 8.
+  [screenshots/tools/linuxroot.sh](screenshots/tools/linuxroot.sh) makes
+  that tree with `apk.static` (ghostscript, gnucobol, jq, from Alpine edge).
+- **Ghostscript** opens every file it writes with `file`. It reads events
+  from `%stdin`, because gs reads named files with `fread`, which waits for
+  a full buffer, so the shell redirects `events` to stdin and does nothing
+  else.
+- **COBOL** opens everything itself. GnuCOBOL 3.2 refuses tabs in
+  `LINE SEQUENTIAL` records by default (COBOL 2022's validation), and the
+  table and description list are TSV, so it runs with
+  `COB_LS_VALIDATE=false`, passed with gpuifs's `--env`.
+- **jq** can't open files, so a shell line wires events in and the root
+  node's ctl out. jq can only write that one ctl, so it lays the board out
+  with absolute positions it computes, and redraws it whole on each move.
+
+```sh
+L=third_party/hyper9/.local/linux/edge-tools   # from screenshots/tools/linuxroot.sh
+cd examples/sed && gpuifs -t Counter rc -c "echo 'window main title=Counter size=420,240' >/mnt/gpui/ctl; sed -nuf counter.sed /mnt/gpui/events"
+cd examples/ps && gpuifs -t Stamps --dir $L:'#L' sh -c "exec gs -q -dNODISPLAY --permit-file-all='/9/mnt/gpui/*' stamps.ps </9/mnt/gpui/events"
+cd examples/cobol && gpuifs --headless --dir $L:'#L' cobc -x payroll.cob   # cobc and gcc, in h9
+gpuifs -t Payroll --dir $L:'#L' --env COB_LS_VALIDATE=false ./payroll
+cd examples/jq && gpuifs -t Tic-tac-toe --dir $L:'#L' sh -c 'G=/9$gpuifs; jq -nj --arg window 1 -f ttt.jq >$G/ctl && jq -nRj --unbuffered -f ttt.jq <$G/events >$G/windows/main/root/ctl'
 ```
 
 ## Conventions

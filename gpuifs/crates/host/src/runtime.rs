@@ -575,8 +575,20 @@ pub(crate) fn host_cmd(inner: &Rc<Inner>, c: HostCmd, cx: &mut App) {
             } else {
                 format!("windows/{win}/{node}")
             };
-            let h = inner.focus_handle(&path, cx);
-            with_window(inner, &win, cx, |window, cx| h.focus(window, cx));
+            // A text component focuses its own field; anything else, the
+            // node's handle.
+            let comp = inner
+                .node_view(&path)
+                .and_then(|n| inner.components.get(n.ty()));
+            let state = inner.states.borrow().get(&path).and_then(|s| s.entity.clone());
+            let done = comp.is_some_and(|c| {
+                with_window(inner, &win, cx, |window, cx| c.focus(state.as_ref(), window, cx))
+                    .unwrap_or(false)
+            });
+            if !done {
+                let h = inner.focus_handle(&path, cx);
+                with_window(inner, &win, cx, |window, cx| h.focus(window, cx));
+            }
             // The tree already echoed this move (via=ctl); don't report it as the user's.
             let view = inner.windows.borrow().get(&win).map(|w| w.view.clone());
             if let Some(v) = view {

@@ -88,6 +88,9 @@ pub(crate) fn apply(tree: &mut Tree, s: SessionId, op: Op) -> Result<Changes, Er
         tree.requests.remove(&seq);
     }
     let mut host = host;
+    // Batches this write ended, kept so their windows' prop changes can be
+    // replayed at commit (see below).
+    let mut ended = Vec::new();
     for b in batch_ops {
         match b {
             BatchOp::Begin(scope) => tree.batches.push(Batch {
@@ -102,7 +105,7 @@ pub(crate) fn apply(tree: &mut Tree, s: SessionId, op: Op) -> Result<Changes, Er
                     .iter()
                     .position(|b| b.session == s && b.scope == scope)
                 {
-                    tree.batches.remove(i);
+                    ended.push(tree.batches.remove(i));
                 }
                 let wins = match scope {
                     Some(w) => vec![w],
@@ -122,7 +125,23 @@ pub(crate) fn apply(tree: &mut Tree, s: SessionId, op: Op) -> Result<Changes, Er
             t.push(l);
         }
     }
-    let ch = tree.finish(&old, host);
+    let mut ch = tree.finish(&old, host);
+    // While a batch is open the host renders the frozen tree, so a prop
+    // written then (an input's value, say) reached its component as the
+    // frozen value. At commit, hand the components every prop that differs
+    // from the frozen tree, so stateful widgets catch up.
+    for b in &ended {
+        let pre = b.scope.as_ref().map(|w| format!("windows/{w}/"));
+        for p in diff(&b.frozen, &tree.state).props {
+            let in_scope = pre.as_ref().is_none_or(|pre| p.0.starts_with(pre.as_str()));
+            let win =
+                p.0.strip_prefix("windows/")
+                    .and_then(|r| r.split('/').next());
+            if in_scope && !win.is_some_and(|w| tree.is_frozen(w)) && !ch.props.contains(&p) {
+                ch.props.push(p);
+            }
+        }
+    }
     for (ev, default) in events {
         match default {
             Some(d) => {
