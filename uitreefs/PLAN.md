@@ -2,6 +2,8 @@
 
 Nov 21, 2026 · Draft v0.1 · implements [DESIGN.md](DESIGN.md) (gpuifs: GPUI Kit as files, v0.1)
 
+> **Historical.** This is the plan gpuifs 0.1 was built from. gpuifs is now uitreefs, and its protocol is [DESIGN.md](DESIGN.md) v0.2; see § Changes from gpuifs 0.1 there. Names and paths below (`gpuifs`, `$gpuifs/windows/...`, `keymap`) are the 0.1 ones.
+
 This plan splits gpuifs into workstreams that separate threads can build at the
 same time. Each workstream owns a set of directories, codes against the
 interfaces in [§ Contracts](#contracts), and has its own acceptance test. The

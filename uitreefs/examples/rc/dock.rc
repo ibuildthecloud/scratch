@@ -171,6 +171,6 @@ cat $ui/events | while(ev=`{read}){
 	case close:. quit:*
 		cmd quit
 	case close:ws/*
-		echo close 'seq='^`{attr seq} >$m/$ev(3)/ctl
+		echo close 'seq='^`{attr seq} >$m/$ev(3)^/ctl
 	}
 }

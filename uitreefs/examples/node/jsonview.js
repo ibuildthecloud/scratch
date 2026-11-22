@@ -57,17 +57,17 @@ function short(v) {
 // A tree item line: id parent label icon=
 const item = (n) => `${n.id} ${n.parent} ${q(`${n.key}: ${short(n.value)}`)} icon=${icon[kind(n.value)]}`;
 
-// items for a filter: matching nodes and their ancestors.
-function items(filter) {
+// The nodes a filter keeps: matching nodes and their ancestors.
+function keep(filter) {
 	const f = filter.trim().toLowerCase();
-	if (!f) return nodes.map(item);
+	if (!f) return nodes;
 	const keep = new Set();
 	for (const n of nodes) {
 		const leaf = !(n.value && typeof n.value === "object");
 		if (n.key.toLowerCase().includes(f) || (leaf && String(n.value).toLowerCase().includes(f)))
 			for (let p = n; p && !keep.has(p.id); p = byId.get(p.parent)) keep.add(p.id);
 	}
-	return nodes.filter((n) => keep.has(n.id)).map(item);
+	return nodes.filter((n) => keep.has(n.id));
 }
 
 put(`${win}/ctl`, "set . title=" + q(`${file.replace(/.*\//, "")} — JSON`) + " size=1000,640 min=700,420 pos=center");
@@ -90,12 +90,16 @@ put(`${win}/tree`, `div root  : v_flex size_full bg=background
 put("keys", "cmd-f find\nescape clear\n");
 
 function show(filter) {
-	const lines = items(filter);
-	// The whole list as a here-value, and the roots expanded, in one write.
+	const shown = keep(filter);
+	// Unfiltered, the top two levels are open; filtered, every match's path.
+	const open = filter
+		? shown.filter((n) => n.value && typeof n.value === "object")
+		: shown.filter((n) => n.parent === "-" || byId.get(n.parent)?.parent === "-");
+	// The whole list as a here-value, and what is open, in one write.
 	ctl([
-		"set split/left/t items=<<END", ...lines, "END",
-		`set split/left/t expanded=${q(nodes.filter((n) => n.parent === "-" || byId.get(n.parent)?.parent === "-").map((n) => n.id).join(" "))}`,
-		`set st/left text=${q(filter ? `${lines.length} of ${nodes.length} values match` : `${nodes.length} values`)}`,
+		"set split/left/t items=<<END", ...shown.map(item), "END",
+		`set split/left/t expanded=${q(open.map((n) => n.id).join(" "))}`,
+		`set st/left text=${q(filter ? `${shown.length} of ${nodes.length} values match` : `${nodes.length} values`)}`,
 	]);
 }
 

@@ -1,8 +1,9 @@
 #!/bin/bash
-# Usage: more.sh EXAMPLE  (sed-counter ps-stamps cobol-payroll jq-ttt, or all)
-# The sed, PostScript, COBOL and jq examples, run in gpuifs under Xvfb and
-# driven with xdotool, like inter.sh. sed is 9front's, inside h9; gs, the
-# COBOL program and jq are Linux programs, run by h9 on the Alpine root
+# Usage: more.sh EXAMPLE  (sed-counter ps-stamps cobol-payroll jq-ttt lua-mixer node-jsonview
+# python-expenses ruby-regex, or all)
+# The sed, PostScript, COBOL, jq, Lua, Node, Python and Ruby examples, run in uitreefs under Xvfb and
+# driven with xdotool, like inter.sh. sed is 9front's, inside h9; the rest
+# are Linux programs, run by h9 on the Alpine root
 # that linuxroot.sh makes ($H9LINUX).
 . $(dirname "$0")/lib.sh
 H9LINUX=${H9LINUX:-$UITREEFS_DIR/third_party/hyper9/.local/linux/edge-tools}
@@ -13,7 +14,7 @@ one() {
 case $1 in
 sed-counter)
 	cd $UITREEFS_DIR/examples/sed
-	run counter -t Counter rc -c "echo 'window main title=Counter size=420,240' >/mnt/ui/ctl; sed -nuf counter.sed /mnt/ui/events"
+	run counter -t Counter sed -nuf counter.sed /mnt/ui/events
 	shot sed-counter 0
 	recstart sed-counter
 	for i in $(seq 12); do click 345 80; sleep .3; done; sleep 1
@@ -25,7 +26,7 @@ sed-counter)
 	shot sed-counter-2026 0;;
 ps-stamps)
 	cd $UITREEFS_DIR/examples/ps
-	run stamps -t Stamps --dir $H9LINUX:'#L' sh -c "exec gs -q -dNODISPLAY --permit-file-all='/9/mnt/ui/*' stamps.ps </9/mnt/ui/events"
+	run stamps -t Stamps --dir $H9LINUX:'#L' sh -c 'exec gs -q -dNODISPLAY -sui="$ui" --permit-file-all="$ui/*" stamps.ps <$ui/events'
 	recstart ps-stamps
 	click 150 580; sleep 1.5
 	click 440 19; sleep .8; click 330 600; sleep 1.5
@@ -38,7 +39,7 @@ ps-stamps)
 cobol-payroll)
 	cd $UITREEFS_DIR/examples/cobol
 	$G --headless --dir $H9LINUX:'#L' cobc -x payroll.cob || exit 1
-	run payroll -t Payroll --dir $H9LINUX:'#L' --env COB_LS_VALIDATE=false ./payroll
+	run payroll -t Payroll --dir $H9LINUX:'#L' ./payroll
 	recstart cobol-payroll
 	click 481 207; sleep 2
 	click 481 82; typ "Grace Hopper"; xdotool key Tab; typ "45"; xdotool key Tab; typ "62.50"; xdotool key Return; sleep 2
@@ -49,7 +50,7 @@ cobol-payroll)
 	rm -f payroll;;
 jq-ttt)
 	cd $UITREEFS_DIR/examples/jq
-	run ttt -t Tic-tac-toe --dir $H9LINUX:'#L' sh -c 'G=/9$gpuifs; jq -nj --arg window 1 -f ttt.jq >$G/ctl && jq -nRj --unbuffered -f ttt.jq <$G/events >$G/windows/main/root/ctl'
+	run ttt -t Tic-tac-toe --dir $H9LINUX:'#L' sh -c 'jq -nRj --unbuffered -f ttt.jq <$ui/events >$ui/win/main/ctl'
 	recstart jq-ttt
 	cell() { click $((70 + ($1 % 3) * 100)) $((118 + ($1 / 3) * 100)); sleep 1.3; }
 	for c in 4 2 3 7 8; do cell $c; done; sleep 1.5
@@ -58,8 +59,49 @@ jq-ttt)
 	for c in 0 8 2; do cell $c; done; sleep 2
 	recstop jq-ttt
 	shot jq-ttt 0;;
+lua-mixer)
+	cd $UITREEFS_DIR/examples/lua
+	run mixer -t Mixer --dir $H9LINUX:'#L' lua5.4 mixer.lua
+	shot lua-mixer 0
+	recstart lua-mixer
+	click 420 187; sleep 1; click 150 222; sleep 1; click 244 305; sleep 1.5
+	click 360 305; sleep 1.5; click 244 305; sleep 1.5
+	click 98 305; typ "#e11d48"; xdotool key Return; sleep 1.5; click 244 305; sleep 1.5
+	click 360 305; sleep 1.5; click 244 305; sleep 1.5; click 44 410; sleep 2
+	recstop lua-mixer
+	shot lua-mixer-palette 0;;
+node-jsonview)
+	cd $UITREEFS_DIR/examples/node
+	run jsonview -t JSON --dir $H9LINUX:'#L' node jsonview.js sample.json
+	shot node-jsonview 0
+	recstart node-jsonview
+	click 126 143; sleep 2; click 111 279; sleep 2
+	click 840 29; typ "ui"; sleep 3
+	recstop node-jsonview
+	shot node-jsonview-filter 0;;
+python-expenses)
+	cd $UITREEFS_DIR/examples/python
+	rm -f expenses.txt
+	run expenses -t Expenses --dir $H9LINUX:'#L' python3 expenses.py
+	shot python-expenses 0
+	recstart python-expenses
+	exp() { click 150 105; typ "$1"; xdotool key Tab; typ "$2"; click 150 247; sleep .8; click 60 $3; sleep .5; click 150 295; sleep 2; }
+	exp "Coffee beans" 12.50 289; exp "Train pass" 64 320; exp "Lamp" 39.90 351; exp "Concert" 48 382; exp "Groceries" 83.20 289
+	sleep 1
+	recstop python-expenses
+	shot python-expenses-added 0
+	rm -f expenses.txt;;
+ruby-regex)
+	cd $UITREEFS_DIR/examples/ruby
+	run regex -t Regex --dir $H9LINUX:'#L' ruby regex.rb
+	shot ruby-regex 0
+	recstart ruby-regex
+	click 370 40; xdotool key ctrl+a; typ '\d{4}'; sleep 2
+	xdotool key ctrl+a; typ '(\w+)@([\w.-]+)'; sleep 3
+	recstop ruby-regex
+	shot ruby-regex-groups 0;;
 esac
 killall_g
 grep -v "^exit=143" $CAPTMP/${n:-$1}.log | tail -5
 }
-if [ "$1" = all ]; then for e in sed-counter ps-stamps cobol-payroll jq-ttt; do one $e; done; else one "$1"; fi
+if [ "$1" = all ]; then for e in sed-counter ps-stamps cobol-payroll jq-ttt lua-mixer node-jsonview python-expenses ruby-regex; do one $e; done; else one "$1"; fi

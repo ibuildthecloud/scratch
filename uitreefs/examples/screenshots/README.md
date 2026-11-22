@@ -1,18 +1,20 @@
 # Example captures
 
-Every example in [examples/](..) run for real: gpuifs built in release mode
-with GPUI and h9 linked in (Zig 0.16, hyper9 at the pinned submodule), rc and
-awk clients running inside an h9 machine on the 9front 11952 amd64 root
-(`--root`/`$H9ROOT`, emulated CPU since the container has no KVM), windows on
-Xvfb with Mesa's lavapipe as the Vulkan driver, driven with xdotool. GIFs are
-recorded without the pointer. Linux rendering only; nothing here says how the
-macOS host looks.
+Every example in [examples/](..) run for real on uitreefs 0.2: built in
+release mode with GPUI and h9 linked in (Zig 0.16, hyper9 at the pinned
+submodule), rc and awk clients running inside an h9 machine on the 9front
+11952 amd64 root (`--root`/`$H9ROOT`, emulated CPU since the container has
+no KVM), Linux clients in the same machine on an Alpine edge tree, windows
+on Xvfb with Mesa's lavapipe as the Vulkan driver, driven with xdotool.
+GIFs are recorded without the pointer. Linux rendering only; nothing here
+says how the macOS host looks.
 
-[tools/all.sh](tools/all.sh) remakes every capture; `tools/inter.sh calc`
-remakes one. Start `Xvfb :99 -screen 0 1440x900x24` first. The sed,
-PostScript, COBOL and jq captures are [tools/more.sh](tools/more.sh)
-(`more.sh all`, or one by name); the last three run Linux programs in h9
-on an Alpine tree that [tools/linuxroot.sh](tools/linuxroot.sh) makes.
+[tools/all.sh](tools/all.sh) remakes the rc, Go, C and awk captures;
+`tools/inter.sh calc` remakes one. Start `Xvfb :99 -screen 0 1440x900x24`
+first. The sed, PostScript, COBOL, jq, Lua, Node, Python and Ruby captures
+are [tools/more.sh](tools/more.sh) (`more.sh all`, or one by name); all but
+sed run Linux programs in h9 on an Alpine tree that
+[tools/linuxroot.sh](tools/linuxroot.sh) makes.
 
 ## What ran
 
@@ -40,10 +42,33 @@ on an Alpine tree that [tools/linuxroot.sh](tools/linuxroot.sh) makes.
 | [ps/stamps.ps](../ps/stamps.ps) | Ghostscript 10.08 on Alpine, in h9: trees at two details, a snowflake, a spirograph, glyphs, undo | [ps-stamps.png](ps-stamps.png), [ps-stamps.gif](ps-stamps.gif) |
 | [cobol/payroll.cob](../cobol/payroll.cob) | GnuCOBOL 3.2 on Alpine, built and run in h9: field errors, then three employees paid | [cobol-payroll.png](cobol-payroll.png), [cobol-payroll.gif](cobol-payroll.gif) |
 | [jq/ttt.jq](../jq/ttt.jq) | jq 1.8 on Alpine, in h9: a draw, then jq wins | [jq-ttt-draw.png](jq-ttt-draw.png), [jq-ttt.png](jq-ttt.png), [jq-ttt.gif](jq-ttt.gif) |
-| [python/hn.py](../python/hn.py) | not run: the capture sandbox blocks the HN API host, and its kernel has no 9p filesystem to mount `gpuifs -a` for a host-side Python | — |
+| [lua/mixer.lua](../lua/mixer.lua) | Lua 5.4 on Alpine, in h9: sliders, a typed hex color, Random, a palette of saved swatches | [lua-mixer.png](lua-mixer.png), [lua-mixer-palette.png](lua-mixer-palette.png), [lua-mixer.gif](lua-mixer.gif) |
+| [node/jsonview.js](../node/jsonview.js) | Node 26 on Alpine, in h9: picking values, filtering the tree | [node-jsonview.png](node-jsonview.png), [node-jsonview-filter.png](node-jsonview-filter.png), [node-jsonview.gif](node-jsonview.gif) |
+| [python/expenses.py](../python/expenses.py) | CPython 3.14 on Alpine, in h9: five expenses in four categories, table, chart and totals in step | [python-expenses.png](python-expenses.png), [python-expenses-added.png](python-expenses-added.png), [python-expenses.gif](python-expenses.gif) |
+| [ruby/regex.rb](../ruby/regex.rb) | Ruby on Alpine, in h9: highlights and a groups table as the pattern is typed | [ruby-regex.png](ruby-regex.png), [ruby-regex-groups.png](ruby-regex-groups.png), [ruby-regex.gif](ruby-regex.gif) |
+| [python/hn.py](../python/hn.py) | not run: the capture sandbox blocks the HN API host | — |
 | [sh/progress.sh](../sh/progress.sh) | not run: needs plan9port's `9p` | — |
 
-## Fixed while capturing
+## Fixed while capturing (0.2)
+
+- **Enter in a form sent two submits.** An input inside a form sent its own
+  `submit` and then the form's. In 0.1 the input usually had no tag, so a
+  client keyed on the tag saw one; in 0.2 the input inherits the form's
+  tag, so payroll.cob and expenses.py ran twice and the second run, on the
+  cleared form, drew "required" errors. Inside a form, Enter now sends only
+  the form's `submit`.
+- **`$ui` for Linux clients.** h9's Linux `/mnt` holds only its own mount
+  points, so the link uitreefs put there never showed. With a Linux root,
+  `$ui` is now `/9/mnt/ui`, and stamps.ps takes it as `-sui=$ui`, since gs
+  in SAFER mode has no `getenv`.
+- **rc carets after a subscript.** `$m/$ev(3)/value` is two words in Plan 9
+  rc; settings.rc and dock.rc now say `$m/$ev(3)^/value`.
+- **counter.sed** reset only the first line of its multi-line screen to 0,
+  so the first click did arithmetic on the screen text.
+- **expenses.py and mixer.lua** named nodes by the wrong paths.
+- **jsonview.js** expanded ids that a filter had hidden.
+
+## Fixed while capturing (0.1)
 
 - **Layouts.** `h_flex` carries GPUI Kit's `items_center`, so the two-pane
   roots of settings, gallery and notes centered their panes instead of
@@ -78,6 +103,10 @@ on an Alpine tree that [tools/linuxroot.sh](tools/linuxroot.sh) makes.
   (input, textarea, number-input) now focus it.
 
 ## Still open
+
+- The dock's command palette doesn't take the typed query in the capture
+  (the search field shows its placeholder), and the notes list stays empty
+  beside a new note. Both were so in 0.1 too.
 
 - The stocks chart's line looks nearly flat, likely because its y axis
   starts at zero, so a few dollars on a price of 140 barely moves it (not

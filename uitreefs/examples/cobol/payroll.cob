@@ -14,7 +14,6 @@
       *> UNSTRING ... DELIMITED BY SPACE finds what to do. Each run is
       *> then one ctl write: field errors, the pay stub, the register,
       *> the total and the cleared inputs, as set lines with here-values
-      *> for the multi-line ones. CLOSE applies them all, in one frame.
       *> for the multi-line ones. CLOSE applies them all in one frame.
       *>
       *> Money is fixed-point decimal, as COBOL has always done it:

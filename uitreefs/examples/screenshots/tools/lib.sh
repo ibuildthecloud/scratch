@@ -8,7 +8,7 @@ OUT=$UITREEFS_DIR/examples/screenshots
 mkdir -p $OUT
 # start NAME TIMEOUT cmd...: run in bg, log to $CAPTMP/NAME.log
 start() { n=$1; t=$2; shift 2; ( timeout $t "$@" > $CAPTMP/$n.log 2>&1; echo "exit=$?" >> $CAPTMP/$n.log ) & sleep 1; }
-# wait for a gpuifs window to appear; sets WID, X, Y, W, H
+# wait for a uitreefs window to appear; sets WID, X, Y, W, H
 waitwin() { for i in $(seq 1 ${1:-60}); do WID=$(xdotool search --onlyvisible --class uitreefs 2>/dev/null | tail -1); [ -z "$WID" ] && WID=$(xdotool search --onlyvisible --name . 2>/dev/null | tail -1); [ -n "$WID" ] && break; sleep 1; done; [ -z "$WID" ] && { echo no window; return 1; }; eval $(xdotool getwindowgeometry --shell $WID | sed 's/^WINDOW=.*//'); X=$X Y=$Y W=$WIDTH H=$HEIGHT; }
 shot() { sleep ${2:-1}; import -window root -crop ${W}x${H}+${X}+${Y} +repage $OUT/$1.png; }
 click() { xdotool mousemove $((X+$1)) $((Y+$2)) click 1; }

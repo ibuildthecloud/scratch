@@ -91,7 +91,7 @@ uitreefs --dir alpine:#L -t Todo /bin/lua todo.lua   # a Linux client from an Al
 5. **When the app quits** (`quit` on the root `ctl`, the user closing the last window, or a `quit` request the client doesn't keep), uitreefs calls `Signals.hangup`. Every blocked `events` read returns end of file, later file access fails with `app gone`, and h9 tears the machine down after 2 seconds.
 6. With `-a addr` and no `cmd`, uitreefs makes no machine and serves 9P on `addr`, so a test harness or a client on the host can attach with any 9P library.
 
-**Linux clients.** A Linux binary sees the Plan 9 namespace under `/9`. When any `--dir` targets the Linux view (`#L`), uitreefs also binds a directory at `#L/mnt` holding a link `ui -> /9/mnt/ui`, so `$ui` is the same path in both ABIs and a Python or Node client uses it as is.
+**Linux clients.** A Linux binary sees the Plan 9 namespace under `/9`. When any `--dir` targets the Linux view (`#L`), the program runs there, so uitreefs sets `$ui` to `/9/mnt/ui` and a Python or Node client uses it as is. Clients should always go through `$ui` rather than spell the path. (The same path in both views would need h9's Linux `/mnt`, which holds only h9's own mount points, to show `ui`; see open questions.)
 
 ### Embedding h9
 
@@ -371,7 +371,7 @@ id  label  [icon=name]  [disabled]
 | `radio-group` | `items`, `value`, `dir=row\|col` | `change value=` |
 | `switch` / `toggle` | `label`, `value` | `change value=` |
 | `slider` | `min` `max` `step` `value` (one number, or `lo hi` for a range), `dir` | `change value=` (coalesced while dragging), `commit value=` on release |
-| `input` | `value`, `placeholder`, `mask`, `max_len`; flags `secret`, `cleanable`, `readonly`; `prefix`/`suffix` slots | `change` (coalesced, carries no text), `submit`, `focus`, `blur` |
+| `input` | `value`, `placeholder`, `mask`, `max_len`; flags `secret`, `cleanable`, `readonly`; `prefix`/`suffix` slots | `change` (coalesced, carries no text), `submit` (inside a form, the form sends it instead), `focus`, `blur` |
 | `textarea` | as `input`, plus `rows`, `auto_grow=min,max` | as `input` |
 | `number-input` | `value`, `min`, `max`, `step` | `change value=` |
 | `otp-input` | `length`, `value`, `secret` | `change`, `complete value=` |
@@ -813,7 +813,7 @@ uitreefs is gpuifs renamed, with the protocol reworked from what its 24 example 
 | `events` reads shorter than a line fail | Any read size |
 | Every client creates `main` and answers `close`/`quit` | `main` exists; requests are opt-in with `ask` |
 | Errors only to the writer | Also stderr, `trace` and an `error` event |
-| `/mnt/gpui`, `/9/mnt/gpui` for Linux clients | `$ui` (`/mnt/ui`) in both |
+| `/mnt/gpui`, `/9/mnt/gpui` for Linux clients | `$ui`: `/mnt/ui`, or `/9/mnt/ui` for Linux clients |
 
 ## Open questions
 
@@ -828,3 +828,4 @@ uitreefs is gpuifs renamed, with the protocol reworked from what its 24 example 
 9. **`@name` and `@asset`.** `@total` finds a node and `src=@logo` names an asset. A later `new` can make a working `@name` ambiguous. Should lookup be limited to tagged nodes, and should one of the two take another sigil?
 10. **Shadowed window files.** A child named `title` hides the window's `title` file. Shadowing is the least surprising rule found so far; is a separate `win/main/.win/` directory for window files cleaner?
 11. **The browser.** h9 has a WebAssembly host, and GPUI Kit builds for `wasm32`. uitreefs in a browser tab, with the client in an h9 machine beside it, may be possible.
+12. **`$ui` in the Linux view.** Linux clients find the tree at `/9/mnt/ui`, because h9's Linux `/mnt` is its own directory of mount points and shows nothing else. One path in both views wants h9 to show the tree there too (a `ui` mount point beside `term`, or a union with the Linux tree's `/mnt`). Until then `$ui` differs by view, and a 9front program started from a Linux root has to set it.

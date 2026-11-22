@@ -29,7 +29,7 @@ new button inc label=+ tag=inc : lg primary w=64\
 new text roman text=nulla : w_full text_center text_2xl text_color=muted_foreground font_family=C059\
 new button reset label=Reset tag=reset : ghost sm/
 	w /mnt/ui/win/main/ctl
-	s/.*/0/
+	s/(.|\n)*/0/
 	h
 	d
 }

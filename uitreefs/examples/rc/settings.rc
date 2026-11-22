@@ -149,7 +149,7 @@ cat $ui/events | while(ev=`{read}){
 	case click:signout click:delete
 		echo 'notify ''Not in this example'' type=info' >$m/ctl
 	case change:set:*
-		v=`{cat $m/$ev(3)/value}
+		v=`{cat $m/$ev(3)^/value}
 		apply $arg $v
 		save $arg $v
 	}

@@ -8,7 +8,7 @@ expenses.txt in the current directory.
 CPython from an Alpine tree, run by h9's Linux ABI, with the tree at $ui.
 No network and no packages: os and the event loop's line.split().
 
-Shows: a form with labels=side and dir=col, field errors, a select whose
+Shows: a form with labels=top and dir=col, field errors, a select whose
 items are plain words, the form's tag inherited by its inputs (Enter in
 any of them submits), the table's rows and the chart's data rewritten as
 here-values in one ctl write, so the table, chart and totals always change
@@ -107,20 +107,20 @@ def show(rows, sel=None):
 
 
 def add(rows):
-    what = get(f"{WIN}/f/what/in/value")
-    amount = get(f"{WIN}/f/amount/in/value").lstrip("$")
-    cat = get(f"{WIN}/f/cat/in/value") or "Other"
+    what = get(f"{WIN}/side/f/what/in/value")
+    amount = get(f"{WIN}/side/f/amount/in/value").lstrip("$")
+    cat = get(f"{WIN}/side/f/cat/in/value") or "Other"
     err_what = "" if what else "What was it?"
     try:
         value = float(amount)
         err_amount = "" if 0 < value < 1e7 else "More than zero, please"
     except ValueError:
         value, err_amount = 0, "A number, like 12.50"
-    lines = [f"set f/what error={q(err_what)}", f"set f/amount error={q(err_amount)}"]
+    lines = [f"set side/f/what error={q(err_what)}", f"set side/f/amount error={q(err_amount)}"]
     if not err_what and not err_amount:
         rows.append([time.strftime("%Y-%m-%d"), cat, value, what])
         save(rows)
-        lines += ["set f/what/in value=", "set f/amount/in value=", "set . focus=f/what/in"]
+        lines += ["set side/f/what/in value=", "set side/f/amount/in value=", "set . focus=side/f/what/in"]
     ctl(*lines)
     return not (err_what or err_amount)
 
@@ -129,10 +129,10 @@ def main():
     rows = load()
     ctl("set . title=Expenses size=980,620 min=760,480 pos=center")
     put(f"{WIN}/tree", SCREEN)
-    put(f"{WIN}/f/cat/in/items", "".join(f"{c} {c}\n" for c in CATS))
+    put(f"{WIN}/side/f/cat/in/items", "".join(f"{c} {c}\n" for c in CATS))
     put(f"{WIN}/main/rows/columns", "what What 260 sort\ncat Category 120 sort\nday Date 120 sort\namount Amount 100 sort align=right\n")
     put("keys", "cmd-backspace del\n")
-    put(f"{WIN}/focus", "f/what/in")
+    put(f"{WIN}/focus", "side/f/what/in")
     show(rows)
     sel = None
     with open(f"{UI}/events") as ev:

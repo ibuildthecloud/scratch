@@ -4,13 +4,14 @@
 % snowflake, a spirograph or a glyph from one of its own fonts.
 %
 %	uitreefs -t Stamps --dir ALPINE:#L sh -c \
-%	    'exec gs -q -dNODISPLAY --permit-file-all="$ui/*" stamps.ps <$ui/events'
+%	    'exec gs -q -dNODISPLAY -sui="$ui" --permit-file-all="$ui/*" stamps.ps <$ui/events'
 %
-% --permit-file-all lets gs, which runs with -dSAFER, write the tree.
+% --permit-file-all lets gs, which runs with -dSAFER, write the tree, and
+% -sui passes $ui in, since SAFER takes getenv away.
 %
 % gs is a Linux program, so it runs in the h9 machine on an Alpine root
-% (ALPINE is a tree with ghostscript installed), and it sees the tree at
-% /mnt/ui, the same $ui as a Plan 9 client. PostScript opens the tree's
+% (ALPINE is a tree with ghostscript installed), and it finds the tree at
+% $ui, like any other client. PostScript opens the tree's
 % files itself with the file operator: it sets up the main window, writes
 % the screen as a tree document, and writes the canvas's ops. The one
 % thing it can't do is read events from a named file: gs reads named
@@ -28,7 +29,7 @@
 % PostScript would have. The canvas is the stamps list, re-rendered into
 % ops on every change; undo just drops the last stamp.
 
-/base (/mnt/ui) def
+/base /ui where { /ui get } { (/mnt/ui) } ifelse def	% -sui=$ui on the command line
 /ident matrix def
 ident setmatrix		% user space is device space is canvas space: y down
 /min { 2 copy gt { exch } if pop } def

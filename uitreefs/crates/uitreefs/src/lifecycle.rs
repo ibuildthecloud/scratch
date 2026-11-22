@@ -290,14 +290,14 @@ fn listen(addr: &str, insecure: bool, backend: Arc<dyn FsBackend>) -> Result<Opt
 /// The machine's config for `args`, with `guest` as its end of the pair.
 fn machine_config(args: &Args, guest: OwnedFd) -> Result<h9sys::Config, String> {
     let cwd = std::env::current_dir().and_then(std::fs::canonicalize).map_err(|e| format!("cwd: {e}"))?;
-    let mut env = vec![format!("ui={MOUNT}")];
+    // With a Linux root the program runs in the Linux view, where the
+    // Plan 9 namespace is under /9, so `$ui` says /9/mnt/ui there (DESIGN
+    // § Running a client in h9). h9's Linux /mnt holds only its own mount
+    // points, so the tree can't be at /mnt/ui in both views yet.
+    let linux = args.dirs.iter().any(|d| d.contains(":#L"));
+    let mut env = vec![format!("ui={}{MOUNT}", if linux { "/9" } else { "" })];
     env.extend(args.env.iter().cloned());
-    // With a Linux root, `/mnt/ui` is there in the Linux view too, so
-    // Linux clients use `$ui` as is (DESIGN § Running a client in h9).
-    let mut dirs = args.dirs.clone();
-    if dirs.iter().any(|d| d.contains(":#L")) {
-        dirs.push(format!("{}:#L/mnt:a", linux_mnt()?));
-    }
+    let dirs = args.dirs.clone();
     Ok(h9sys::Config {
         // As in h9: --root, else $H9ROOT, else the built-in root.
         root: args.root.clone().or_else(|| std::env::var("H9ROOT").ok().filter(|r| !r.is_empty())).unwrap_or_else(|| "builtin".into()),
@@ -311,18 +311,6 @@ fn machine_config(args: &Args, guest: OwnedFd) -> Result<h9sys::Config, String> 
         profile: String::new(),
         policy_flags: args.policy_flags.clone(),
     })
-}
-
-/// A host directory holding `ui -> /9/mnt/ui`, mounted after `#L/mnt`, so
-/// the Linux view has `/mnt/ui` beside `/mnt/term`.
-fn linux_mnt() -> Result<String, String> {
-    let dir = std::env::temp_dir().join(format!("uitreefs-mnt-{}", std::process::id()));
-    let _ = std::fs::create_dir_all(&dir);
-    let link = dir.join("ui");
-    if std::fs::symlink_metadata(&link).is_err() {
-        std::os::unix::fs::symlink("/9/mnt/ui", &link).map_err(|e| format!("{}: {e}", link.display()))?;
-    }
-    Ok(dir.display().to_string())
 }
 
 /// Starts the client: a socket pair served by `backend`, and the machine on

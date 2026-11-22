@@ -96,10 +96,10 @@ put("keys", "cmd-s save\ncmd-r random\n")
 local function show(sliders)
 	local h = hex()
 	local lines = {
-		"set swatch : " .. swatch .. h,
-		"set info/hex text=" .. h,
-		"set info/rgb text=" .. q(string.format("rgb(%d, %d, %d)", rgb.r, rgb.g, rgb.b)),
-		"set info/name text=" .. q("close to " .. nearest(rgb.r, rgb.g, rgb.b)),
+		"set top/swatch : " .. swatch .. h,
+		"set top/info/hex text=" .. h,
+		"set top/info/rgb text=" .. q(string.format("rgb(%d, %d, %d)", rgb.r, rgb.g, rgb.b)),
+		"set top/info/name text=" .. q("close to " .. nearest(rgb.r, rgb.g, rgb.b)),
 	}
 	for _, c in ipairs({"r", "g", "b"}) do
 		lines[#lines + 1] = "set sliders/" .. c .. "/v text=" .. rgb[c]

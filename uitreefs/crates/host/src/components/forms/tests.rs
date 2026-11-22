@@ -145,7 +145,7 @@ fn input_typing_mirrors_value_without_text_in_events(cx: &mut TestAppContext) {
     let lines = h.events(&mut ev);
     assert_has(&lines, "change ", &[" f/name/in win=", " name ", "via=user"]);
     assert!(!lines.iter().any(|l| l.contains("Ada")), "{lines:?}");
-    assert_has(&lines, "submit ", &[" f/name/in win="]);
+    assert!(!has(&lines, "submit ", &[" f/name/in win="]), "{lines:?}");
     assert_has(&lines, "submit ", &[" f win="]);
 }
 
@@ -300,4 +300,45 @@ fn gallery_form_stories_render(cx: &mut TestAppContext) {
         assert!(w > 0. && hh > 0., "{story}");
         h.remove(&format!("{R}/{story}")).unwrap();
     }
+}
+
+/// Clearing a field's error with `set PATH error=` takes the message away
+/// (payroll.cob clears its errors this way on a good run).
+#[gpui::test]
+fn field_error_clears(cx: &mut TestAppContext) {
+    let mut h = window(cx);
+    h.ctl(R, "new form f\nnew field f/e label=Name error='Needed'\nnew input f/e/in");
+    let with = h.bounds(&format!("{R}/f/e"))[3];
+    h.ctl(R, "set f/e error=");
+    h.settle();
+    let without = h.bounds(&format!("{R}/f/e"))[3];
+    assert!(without < with, "{with} -> {without}");
+    // The same in a write of several lines, which apply as one batch.
+    h.ctl(R, "set f/e error=Again\nset f/e/in value=x");
+    h.settle();
+    assert!((h.bounds(&format!("{R}/f/e"))[3] - with).abs() < 1.);
+    h.ctl(R, "set f/e error=\nset f/e/in value=");
+    h.settle();
+    let without = h.bounds(&format!("{R}/f/e"))[3];
+    assert!(without < with, "{with} -> {without}");
+}
+
+/// payroll.cob's run: errors set in one write, cleared in the next along
+/// with other lines.
+#[gpui::test]
+fn field_error_clears_in_a_side_form(cx: &mut TestAppContext) {
+    let mut h = window(cx);
+    h.write(
+        &format!("{R}/tree"),
+        "div root\n  form f  labels=side  tag=run\n    field name  label=Employee\n      input in\n    field hours  label=Hours\n      input in\n  text total\n",
+    );
+    let before = h.bounds(&format!("{R}/f/name"))[3];
+    h.ctl(R, "set f/name error='Who are we paying?'\nset f/hours error='Hours must be a number'");
+    h.settle();
+    let with = h.bounds(&format!("{R}/f/name"))[3];
+    assert!(with > before, "{before} -> {with}");
+    h.ctl(R, "set f/name error=\nset f/hours error=\nset total text='1 paid'\nset f/name/in value=\nset . focus=f/name/in");
+    h.settle();
+    let after = h.bounds(&format!("{R}/f/name"))[3];
+    assert!((after - before).abs() < 1., "{before} -> {with} -> {after}");
 }

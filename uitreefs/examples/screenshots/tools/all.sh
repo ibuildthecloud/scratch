@@ -12,7 +12,7 @@ done
 i still awk-csvview awk -t CSV awk -f csvview.awk planets.csv
 for e in counter hello signin todo calc confirm chat gallery settings settings-dark stocks paint files dock notes; do i $e; done
 # Go and C
-B=$CAPTMP/gpuifs-bin; mkdir -p $B
+B=$CAPTMP/uitreefs-bin; mkdir -p $B
 (cd $UITREEFS_DIR/examples/go/greet && GOOS=plan9 GOARCH=amd64 CGO_ENABLED=0 go build -o $B/greet .)
 (cd $UITREEFS_DIR/examples/go/clock && GOOS=plan9 GOARCH=amd64 CGO_ENABLED=0 go build -o $B/clock .)
 cd $B

@@ -86,10 +86,13 @@ fn wire<T: gpui::EventEmitter<InputEvent> + 'static>(
     window
         .subscribe(state, cx, move |_, ev: &InputEvent, _, _| match ev {
             InputEvent::PressEnter { secondary, .. } => {
+                // Inside a form, Enter submits the form: one event, from
+                // the form, so a tag the input inherits from it isn't
+                // seen twice.
                 if submit_on_enter || *secondary {
-                    em.event("submit", &[]);
-                    if let Some(f) = enclosing_form(&n) {
-                        f.emitter().event("submit", &[]);
+                    match enclosing_form(&n) {
+                        Some(f) => f.emitter().event("submit", &[]),
+                        None => em.event("submit", &[]),
                     }
                 }
             }
