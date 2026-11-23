@@ -32,6 +32,7 @@ rest are optional, and a host says which it implements in `version`
 | Session | [session.md](session.md) | `$wm` | no | Every app's windows, focus across apps, the shared menu bar, the desktop layer, chrome, launching |
 | Policy | [policy.md](policy.md) | `/mnt/ux` | no | A public view of an app's tree, rights per verb, grants, redaction, a broker that aggregates apps |
 | Transfer | [transfer.md](transfer.md) | `$ui/drag`, `$ui/clip*`, `$ui/file` | no | Typed drag and drop, a typed clipboard, and host files as byte handles: bytes not paths |
+| Render | [render.md](render.md) | `$render`, never in the app's namespace | no | Scoping draft: renderers as 9P clients. A change stream (snapshot, then batches), an input file, roles for several renderers |
 
 Which hosts are expected to implement what:
 

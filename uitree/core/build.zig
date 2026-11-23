@@ -86,6 +86,20 @@ pub fn build(b: *std.Build) void {
         }
     }
 
+    // The 9P renderer spike (protocols/render.md): `zig build remote`.
+    // Not installed by default.
+    const remote = b.addExecutable(.{
+        .name = "uitree-remote",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/render/main.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{.{ .name = "uitcore", .module = core }},
+        }),
+    });
+    if (with_h9 and target.result.os.tag == .macos) remote.root_module.linkFramework("Hypervisor", .{});
+    b.step("remote", "Build uitree-remote, the 9P renderer spike").dependOn(&b.addInstallArtifact(remote, .{}).step);
+
     // W4: src/ninep/wire.zig is hyper9's dotl/wire.zig, vendored (see its
     // header). This fails when the submodule's copy has moved on.
     const check_wire = b.addSystemCommand(&.{ "sh", "-c", "tail -n +6 src/ninep/wire.zig | cmp -s - ../third_party/hyper9/src/dotl/wire.zig || { echo 'src/ninep/wire.zig differs from hyper9 src/dotl/wire.zig: re-vendor it' >&2; exit 1; }" });

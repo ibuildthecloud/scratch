@@ -302,6 +302,12 @@ pub const Core = struct {
         return c.pinned orelse c.tree.committed();
     }
 
+    /// The state the last pump pinned. Owner thread. For the renderer
+    /// tree spike (render/), which encodes from it right after a pump.
+    pub fn state(c: *Core) *const treem.state.State {
+        return c.st();
+    }
+
     fn node(c: *Core, h: UitNode) ?*const treem.state.Node {
         return c.st().node(h);
     }
