@@ -55,5 +55,5 @@ cd ../tui && zig build test         # the terminal renderer
   screenshots as an artifact.
 
 Status: every workstream has landed on `uitree`. Conformance on
-`uitree-headless`: 29 pass (the transfer layer: typed drags, file drops
-as handles under `$ui/file/`, and the typed clipboard).
+`uitree-headless`: 30 pass (the transfer layer: typed drags, file drops
+as handles under `$ui/file/`, and the typed clipboard; tooltips).
