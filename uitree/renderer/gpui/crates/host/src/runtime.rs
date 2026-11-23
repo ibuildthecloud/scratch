@@ -106,6 +106,8 @@ pub(crate) struct Inner {
     pub clipboard: crate::clipboard::State,
     /// Per-frame timings for --bench: (ABI reads, whole render).
     pub frames: RefCell<Vec<(std::time::Duration, std::time::Duration)>>,
+    /// UITREE_CLICK_BENCH's probe and results (latency.rs).
+    pub clicks: RefCell<crate::latency::Clicks>,
     /// App assets read so far, dropped on `UIT_CMD_ASSETS`.
     pub assets: RefCell<HashMap<String, Rc<[u8]>>>,
     /// Per window, the nodes drawn this frame that have a `tooltip` file.
@@ -368,6 +370,7 @@ pub(crate) fn install_with(opts: Options, waker: Option<uitcore::Waker>, cx: &mu
         quitting: Cell::new(false),
         clipboard: Default::default(),
         frames: Default::default(),
+        clicks: Default::default(),
         assets: Default::default(),
         frame_tips: Default::default(),
         rem: Cell::new(16.),
@@ -442,6 +445,22 @@ pub fn run(opts: Options) -> i32 {
             crate::bench::start(&inner, n, cx);
             return;
         }
+        if let Some(n) = std::env::var("UITREE_CLICK_BENCH").ok().and_then(|v| v.parse().ok()) {
+            crate::latency::start(&inner, n, cx);
+        }
+        // UITREE_HOST_APP: a client on the host that dials the core.
+        if let Ok(app) = std::env::var("UITREE_HOST_APP") {
+            let dial = inner.core.borrow_mut().listen();
+            let r = dial.map_err(|e| e.to_string()).and_then(|d| {
+                std::process::Command::new("sh").arg("-c").arg(&app).env("UI_DIAL", d).spawn().map_err(|e| e.to_string())
+            });
+            if let Err(e) = r {
+                eprintln!("uitree: UITREE_HOST_APP: {e}");
+                EXIT.store(1, Ordering::SeqCst);
+                cx.quit();
+            }
+            return;
+        }
         let argv: Vec<&str> = opts.argv.iter().map(String::as_str).collect();
         let r = inner.core.borrow_mut().run_machine(&uitcore::MachineArgs {
             prog: argv[0],
@@ -482,6 +501,7 @@ pub(crate) fn apply_changes(inner: &Rc<Inner>, ch: Changes, cx: &mut App) {
     for n in &ch.created {
         inner.info(*n);
     }
+    crate::latency::on_props(inner, &ch.props);
     // Client-side prop writes: drop the copies, tell components.
     for (n, file) in &ch.props {
         {

@@ -33,7 +33,7 @@ const ConnId = fsmod.ConnId;
 const Allocator = std.mem.Allocator;
 const UitStr = abi.UitStr;
 
-const usage = "usage: uitree-remote -R ADDR [-r ROOT] CMD [ARG...]\n";
+const usage = "usage: uitree-remote -R ADDR [-a ADDR] [-r ROOT] [CMD [ARG...]]\n";
 
 /// Past this many unread bytes a renderer is too slow: its queue is
 /// dropped and it gets a fresh snapshot instead (render.md § Resync).
@@ -524,17 +524,18 @@ pub fn main(init: std.process.Init) !void {
     const gpa = std.heap.c_allocator;
     const args = try init.minimal.args.toSlice(init.arena.allocator());
     var raddr: ?[]const u8 = null;
+    var aaddr: ?[]const u8 = null;
     var root: []const u8 = "";
     if (init.environ_map.get("H9ROOT")) |v| root = v;
     var i: usize = 1;
     while (i + 1 < args.len and args[i].len > 1 and args[i][0] == '-') : (i += 2) {
-        if (std.mem.eql(u8, args[i], "-R")) raddr = args[i + 1] else if (std.mem.eql(u8, args[i], "-r")) root = args[i + 1] else {
+        if (std.mem.eql(u8, args[i], "-R")) raddr = args[i + 1] else if (std.mem.eql(u8, args[i], "-a")) aaddr = args[i + 1] else if (std.mem.eql(u8, args[i], "-r")) root = args[i + 1] else {
             std.debug.print(usage, .{});
             std.process.exit(2);
         }
     }
     const argv = args[i..];
-    if (raddr == null or argv.len == 0) {
+    if (raddr == null or (argv.len == 0 and aaddr == null)) {
         std.debug.print(usage, .{});
         std.process.exit(2);
     }
@@ -562,6 +563,21 @@ pub fn main(init: std.process.Init) !void {
     const l = try ninep.transport.listen(gpa, raddr.?);
     try l.start(&srv, onConn);
     std.debug.print("uitree-remote: renderers dial {s}\n", .{l.dial});
+
+    // -a: also serve $ui on ADDR, for an app that runs on the host and
+    // dials it (the latency bench's compiled client) instead of in h9.
+    if (aaddr) |aa| {
+        var dial: UitStr = .{};
+        if (uit.uit_listen(r.c, UitStr.of(aa), &dial) != abi.UIT_OK) {
+            std.debug.print("uitree-remote: listen {s}: {s}\n", .{ aa, uit.uit_last_error(r.c).slice() });
+            return error.Listen;
+        }
+        std.debug.print("uitree-remote: apps dial {s}\n", .{dial.slice()});
+    }
+    if (argv.len == 0) {
+        try r.ownerLoop();
+        return;
+    }
 
     const uargv = try init.arena.allocator().alloc(UitStr, argv.len);
     for (argv, uargv) |x, *y| y.* = UitStr.of(x);

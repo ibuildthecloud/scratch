@@ -9,6 +9,7 @@ const N = abi.UitNode;
 
 pub extern fn uit_create(cfg: ?*const abi.UitConfig, out: ?*?*Core) c_int;
 pub extern fn uit_themes(c: *Core, text: S) c_int;
+pub extern fn uit_listen(c: *Core, addr: S, dial: ?*S) c_int;
 pub extern fn uit_run_machine(c: *Core, args: ?*const abi.UitMachineArgs) c_int;
 pub extern fn uit_last_error(c: *Core) S;
 pub extern fn uit_pump(c: *Core, out: ?*abi.UitChanges) c_int;

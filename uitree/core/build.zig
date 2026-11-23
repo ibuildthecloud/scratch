@@ -97,8 +97,20 @@ pub fn build(b: *std.Build) void {
             .imports = &.{.{ .name = "uitcore", .module = core }},
         }),
     });
-    if (with_h9 and target.result.os.tag == .macos) remote.root_module.linkFramework("Hypervisor", .{});
-    b.step("remote", "Build uitree-remote, the 9P renderer spike").dependOn(&b.addInstallArtifact(remote, .{}).step);
+    const remote_step = b.step("remote", "Build uitree-remote, the 9P renderer spike");
+    const install_remote = b.addInstallArtifact(remote, .{});
+    remote_step.dependOn(&install_remote.step);
+    // As for uitree-headless: HVF needs the framework and the entitlement.
+    if (with_h9 and target.result.os.tag == .macos) {
+        remote.root_module.linkFramework("Hypervisor", .{});
+        if (b.graph.host.result.os.tag == .macos) {
+            const sign = b.addSystemCommand(&.{ "codesign", "--force", "--sign", "-", "--entitlements" });
+            sign.addFileArg(b.path("../third_party/hyper9/h9.entitlements"));
+            sign.addArg(b.getInstallPath(.bin, remote.out_filename));
+            sign.step.dependOn(&install_remote.step);
+            remote_step.dependOn(&sign.step);
+        }
+    }
 
     // W4: src/ninep/wire.zig is hyper9's dotl/wire.zig, vendored (see its
     // header). This fails when the submodule's copy has moved on.

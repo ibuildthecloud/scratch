@@ -47,6 +47,7 @@ use gpui::{AnyElement, AnyEntity, App, Entity, FocusHandle, Refineable as _, Scr
 pub use uitcore::{Ctl, Node};
 
 pub mod bench;
+pub mod latency;
 pub mod canvas;
 pub mod clipboard;
 pub mod components;
