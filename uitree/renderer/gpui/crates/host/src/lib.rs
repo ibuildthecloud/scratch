@@ -70,6 +70,8 @@ pub mod testing;
 mod tests;
 
 pub use runtime::run;
+#[cfg(target_family = "wasm")]
+pub use runtime::{web_drop, WEB_ASSETS};
 pub use spec::Spec;
 pub use styling::ParsedStyle;
 
@@ -425,4 +427,12 @@ fn own(attrs: &[(&str, &str)]) -> Vec<(String, String)> {
 pub(crate) struct NodeState {
     pub ty: String,
     pub entity: Option<AnyEntity>,
+}
+
+/// std::time, or on wasm the browser's clock (std's panics there).
+pub(crate) mod time {
+    #[cfg(not(target_family = "wasm"))]
+    pub use std::time::{Instant, SystemTime, UNIX_EPOCH};
+    #[cfg(target_family = "wasm")]
+    pub use web_time::{Instant, SystemTime, UNIX_EPOCH};
 }

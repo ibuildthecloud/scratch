@@ -6,6 +6,8 @@
 #
 #   steps.txt        INDEX LAYER NAME: the layer each step builds in
 #   keys.txt         LAYER KEY: a hash of each layer's steps and the files they read
+#   shared.txt       KEY COPIES: the key the runtime layer is shared under across apps,
+#                    and whether its steps copy files from the source (copies or none)
 #   deploy.txt       LAYER PATH [EXCLUDE...]: what the run takes from each layer
 #   apt-build.txt    Debian packages the plan installs to build
 #   apt-runtime.txt  Debian packages the plan installs to run
@@ -61,7 +63,11 @@ jq -r --rawfile steps "$W/steps.txt" '
 		elif startswith("/") then rtrimstr("/.") | rtrimstr("/")
 		else "/app/" + (rtrimstr("/.") | rtrimstr("/")) end;
 	.deploy.inputs[]? | select(.step and $layer[.step]) | . as $i
-	| .include[]? | "\($layer[$i.step]) \(abs) \([$i.exclude[]? | abs] | join(" "))"' "$P" >"$W/deploy.txt"
+	# A packages step that builds above the runtime layer (Gleam'"'"'s
+	# packages:mise:runtime, after its build) installs into it, or finds
+	# what it wants installed there already: deploy from both.
+	| ([$layer[$i.step]] + (if ($i.step | startswith("packages:")) and $layer[$i.step] != "runtime" then ["runtime"] else [] end))[] as $l
+	| $i.include[]? | "\($l) \(abs) \([$i.exclude[]? | abs] | join(" "))"' "$P" >"$W/deploy.txt"
 
 # Each layer's key: its steps as the plan has them, and the contents of the
 # source files they copy in (and for the app layer, the deploy). h9build chains them, so a layer's key changes
@@ -94,3 +100,30 @@ for l in runtime deps app; do
 		[ "$l" = app ] && jq -c .deploy "$P"
 	} | sha256sum | cut -c1-16 | sed "s/^/$l /"
 done >"$W/keys.txt"
+
+# The runtime layer is shared by every app whose runtime steps are the same:
+# the same tools at the same versions (the mise config the plan writes, with
+# Railpack's resolved versions), and the same settings and commands. The
+# files those steps copy from the source count too, as a mise.toml can name
+# more tools, except idiomatic version files (.nvmrc, .python-version, a
+# Gemfile): the plan has already resolved the versions they name, and the
+# rest of a Gemfile doesn't change what mise installs. h9build leaves the
+# copies themselves out of the shared layer, and makes them in the deps layer.
+idiomatic=" .nvmrc .node-version .python-version .python-versions .ruby-version Gemfile .go-version .java-version .sdkmanrc .bun-version package.json "
+copies=none
+key=$({
+	for i in $(awk '$2 == "runtime" { print $1 }' "$W/steps.txt"); do
+		step=$(jq -c ".steps[$i]" "$P")
+		echo "$step"
+		for s in $(echo "$step" | jq -r '(.commands[]? | .src // empty), (.inputs[]? | select(.local == true) | .include[]?)'); do
+			case $idiomatic in *" $(basename "$s") "*) continue ;; esac
+			hashfiles "$s"
+		done
+	done
+} | sha256sum | cut -c1-16)
+for i in $(awk '$2 == "runtime" { print $1 }' "$W/steps.txt"); do
+	if jq -e ".steps[$i] | any(.commands[]?; has(\"src\")) or any(.inputs[]?; .local == true)" "$P" >/dev/null; then
+		copies=copies
+	fi
+done
+echo "$key $copies" >"$W/shared.txt"

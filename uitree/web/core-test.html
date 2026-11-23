@@ -1,0 +1,41 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>uitree core check</title>
+<style>body { font: 14px ui-monospace, monospace; background: #fff; color: #111; margin: 16px }</style>
+<p>The core in wasm with an app in h9 (?app=NAME, apps.js), and no renderer: the committed tree after each pump.</p>
+<pre id="tree">starting…</pre>
+<pre id="log"></pre>
+<script type="module">
+import { instantiate, Core, runApp } from './uit-web.js';
+import { apps, argvFor, filesFor } from './apps.js';
+import { Tree } from './tree.js';
+
+// core-test.html?app=NAME (apps.js), or ?cmd=... for an rc command line in /app.
+const q = new URLSearchParams(location.search);
+const app = q.get('app') ?? 'counter';
+const log = (s) => { document.getElementById('log').textContent += s + '\n'; console.log(s); };
+const dec = new TextDecoder();
+let core, tree;
+let scheduled = false;
+const pump = () => {
+  scheduled = false;
+  const r = core.pump();
+  if (r !== 0) log(`pump: ${r} ${core.lastError()}`);
+  document.getElementById('tree').textContent = tree.dump();
+};
+// The core alone, with a renderer in JS: its wake is the platform's.
+const m = await instantiate(await (await fetch('uitcore.wasm')).arrayBuffer(), {
+  onWake: () => { if (!scheduled) { scheduled = true; setTimeout(pump, 0); } },
+  log,
+});
+core = new Core(m);
+tree = new Tree(core);
+const t0 = performance.now();
+runApp(core, {
+  files: await filesFor(app),
+  argv: q.get('cmd') ? ['rc', '-c', `cd /app; ${q.get('cmd')}`] : argvFor(app),
+  onOutput: (fd, d) => log(`[${fd}] ${dec.decode(d)}`),
+  onExit: (code, msg) => log(`exit ${code} ${msg ?? ''}`),
+});
+window.uit = { core, tree, t0, click: (path) => tree.emit(path, 'click') };
+</script>
