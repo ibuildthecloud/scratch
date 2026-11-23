@@ -122,7 +122,7 @@ pub(crate) fn keystroke(k: &gpui::Keystroke) -> String {
 
 impl Render for WindowView {
     fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
-        let t0 = std::time::Instant::now();
+        let t0 = crate::time::Instant::now();
         let host = self.host.clone();
         // `spacing` scales every rem-based length: the Tailwind scale words
         // (`p-4` is 1rem) and the rem text sizes, as in Tailwind.
@@ -154,18 +154,34 @@ impl Render for WindowView {
             .id("uitree-window")
             .size_full()
             .track_focus(&self.focus)
-            .on_key_down(move |ev: &gpui::KeyDownEvent, window, _| {
+            .on_key_down(move |ev: &gpui::KeyDownEvent, window, cx| {
                 let ks = keystroke(&ev.keystroke);
                 let focused = h.focused(&w, window).map(|v| v.node()).unwrap_or(0);
-                if let Ok(core) = h.core.try_borrow() {
-                    core.key(&w, &ks, focused);
+                let matched = h.core.try_borrow().map(|core| core.key(&w, &ks, focused)).unwrap_or(false);
+                // A key a binding took is done. In the browser this also
+                // keeps the keystroke's default from going on: gpui_web
+                // turns an Enter it didn't cancel into a second Enter.
+                if matched {
+                    cx.stop_propagation();
                 }
             })
             .bg(bg)
             .text_color(fg)
             .font_family(font)
-            .text_size(font_size)
-            .children(body);
+            .text_size(font_size);
+        // The menu bar, in the browser (actions.rs): above the root, which
+        // takes the rest of the window.
+        #[cfg(target_family = "wasm")]
+        let el = match self.host.menu_bar.borrow().clone() {
+            Some(bar) if !gpui_component::GlobalState::global(cx).app_menus().is_empty() => el
+                .flex()
+                .flex_col()
+                .child(div().flex_none().border_b_1().border_color(cx.theme().border).child(bar))
+                .child(div().flex_1().min_h_0().relative().children(body)),
+            _ => el.children(body),
+        };
+        #[cfg(not(target_family = "wasm"))]
+        let el = el.children(body);
         let el = if over.is_empty() { el } else { el.child(div().absolute().top_0().left_0().size_full().children(over)) };
         self.host.frames.borrow_mut().push((std::time::Duration::ZERO, t0.elapsed()));
         el

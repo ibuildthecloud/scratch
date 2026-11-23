@@ -160,6 +160,9 @@ pub const Ui = struct {
     src: Source,
     win: []const u8 = "main",
     title: []const u8 = "",
+    /// Opens a link's `href`, where the host can (the browser build: a new
+    /// tab). Null in a terminal, where a link only sends its click.
+    open_url: ?*const fn ([]const u8) void = null,
     shown: bool = false,
     /// `radius 0`: square corners everywhere, read each frame.
     square: bool = false,
@@ -1430,6 +1433,10 @@ pub const Ui = struct {
                 var buf: [2][16]u8 = undefined;
                 const attrs = ui.clickAttrs(t, x, y, &buf);
                 src.emit(n, "click", &attrs);
+                if (t.kind == .link) if (ui.open_url) |open| {
+                    const href = std.mem.trim(u8, src.text(n, "href"), " \n");
+                    if (href.len > 0) open(href);
+                };
             },
             .checkbox => {
                 const on = std.mem.eql(u8, std.mem.trim(u8, src.text(n, "value"), " "), "on");
@@ -1451,6 +1458,10 @@ pub const Ui = struct {
                 s.open = !s.open;
                 if (!s.open) ui.popup = null;
             },
+            // A press on a text field puts the caret there (onMouse); it
+            // isn't a click, as on GPUI, so a tag the field inherits (a
+            // form's) doesn't fire as if its button were pressed.
+            .input, .textarea => {},
             .slider => {
                 var buf: [32]u8 = undefined;
                 src.emit(n, "commit", &.{.{ "value", std.fmt.bufPrint(&buf, "{d}", .{src.number(n, "value") orelse 0}) catch "0" }});

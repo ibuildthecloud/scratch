@@ -104,6 +104,10 @@ pub(crate) struct Inner {
     pub quitting: Cell<bool>,
     /// The platform clipboard as last published.
     pub clipboard: crate::clipboard::State,
+    /// The browser has no menu bar: menus are drawn in the window
+    /// (actions.rs), by GPUI Kit's AppMenuBar.
+    #[cfg(target_family = "wasm")]
+    pub menu_bar: RefCell<Option<gpui::Entity<gpui_component::menu::AppMenuBar>>>,
     /// Per-frame timings for --bench: (ABI reads, whole render).
     pub frames: RefCell<Vec<(std::time::Duration, std::time::Duration)>>,
     /// App assets read so far, dropped on `UIT_CMD_ASSETS`.
@@ -367,6 +371,8 @@ pub(crate) fn install_with(opts: Options, waker: Option<uitcore::Waker>, cx: &mu
         action_state: Default::default(),
         quitting: Cell::new(false),
         clipboard: Default::default(),
+        #[cfg(target_family = "wasm")]
+        menu_bar: RefCell::new(None),
         frames: Default::default(),
         assets: Default::default(),
         frame_tips: Default::default(),
@@ -420,14 +426,101 @@ pub(crate) fn install_with(opts: Options, waker: Option<uitcore::Waker>, cx: &mu
     })
     .detach();
 
+    #[cfg(target_family = "wasm")]
+    web_drops(cx);
+
     Ok(inner)
 }
+
+/// A file drop from the page (uitree/web/gpui.js): the files' paths in
+/// the core's file system, and where they were dropped, in window points.
+#[cfg(target_family = "wasm")]
+type WebDrop = (Vec<std::path::PathBuf>, f32, f32);
+
+#[cfg(target_family = "wasm")]
+thread_local! {
+    static WEB_DROPS: RefCell<Option<futures::channel::mpsc::UnboundedSender<WebDrop>>> = const { RefCell::new(None) };
+}
+
+/// In the browser: drops `paths` at `x`, `y` on the window, as the
+/// platform's file drop would. gpui_web makes none: the browser gives
+/// `File`s, not paths, so the page puts each file in the core's own file
+/// system first (uit-web.js putFile), where `uit_drag`'s `file=` finds it.
+#[cfg(target_family = "wasm")]
+pub fn web_drop(paths: Vec<std::path::PathBuf>, x: f32, y: f32) {
+    WEB_DROPS.with(|d| {
+        if let Some(tx) = &*d.borrow() {
+            let _ = tx.unbounded_send((paths, x, y));
+        }
+    });
+}
+
+/// Delivers web_drop's drops to the window, from the app's own task.
+#[cfg(target_family = "wasm")]
+fn web_drops(cx: &mut App) {
+    use gpui::{point, px, ExternalPaths, FileDropEvent, Modifiers, MouseMoveEvent, PlatformInput};
+    let (tx, mut rx) = futures::channel::mpsc::unbounded::<WebDrop>();
+    WEB_DROPS.with(|d| *d.borrow_mut() = Some(tx));
+    cx.spawn(async move |cx: &mut AsyncApp| {
+        while let Some((paths, x, y)) = rx.next().await {
+            let position = point(px(x), px(y));
+            // As a platform delivers them: entered, moved, dropped, each
+            // after a frame, since the drop target is hit-tested against
+            // the frame drawn while the drag was over it. First the pointer
+            // itself: the browser sends no mouse moves during a drag, and
+            // GPUI counts nothing as hovered while the last input was a
+            // key (a drop right after a key press would find no target).
+            let events = [
+                PlatformInput::MouseMove(MouseMoveEvent { position, pressed_button: None, modifiers: Modifiers::default() }),
+                PlatformInput::FileDrop(FileDropEvent::Entered { position, paths: ExternalPaths(paths.into()) }),
+                PlatformInput::FileDrop(FileDropEvent::Pending { position }),
+                PlatformInput::FileDrop(FileDropEvent::Submit { position }),
+            ];
+            for ev in events {
+                let (tx, rx) = futures::channel::oneshot::channel::<()>();
+                cx.update(|cx| {
+                    // gpui_web has one window: the canvas.
+                    let Some(w) = cx.active_window().or_else(|| cx.windows().first().copied()) else { return };
+                    let _ = w.update(cx, |_, window, cx| {
+                        window.dispatch_event(ev, cx);
+                        window.refresh();
+                        // On after the frame this event draws: next-frame
+                        // callbacks run as a frame starts, so wait for two.
+                        window.on_next_frame(move |window, _| {
+                            window.on_next_frame(move |_, _| {
+                                let _ = tx.send(());
+                            });
+                        });
+                    });
+                });
+                let _ = rx.await;
+            }
+        }
+    })
+    .detach();
+}
+
+/// In the browser: where GPUI Kit's icons are fetched from, as
+/// `{WEB_ASSETS}/assets/icons/NAME.svg` (uitree/web/build.zig copies them).
+/// An absolute URL: the fetch has no page to resolve a relative one against.
+#[cfg(target_family = "wasm")]
+pub static WEB_ASSETS: std::sync::OnceLock<String> = std::sync::OnceLock::new();
 
 /// Starts GPUI and the core on this (main) thread and runs the app in h9;
 /// returns the exit code when the app quits.
 pub fn run(opts: Options) -> i32 {
-    gpui_kit::application().with_assets(gpui_kit::assets::AllAssets).run(move |cx: &mut App| {
+    // In the browser (uitree/web): gpui_web on one canvas, single-threaded,
+    // icons fetched on demand. run returns at once there; the page's event
+    // loop runs the app, and uit_run_machine starts it in h9's Worker.
+    #[cfg(target_family = "wasm")]
+    let app = gpui_kit::platform::single_threaded_web()
+        .with_assets(gpui_kit::assets::AllAssets::new(WEB_ASSETS.get().cloned().unwrap_or_default()));
+    #[cfg(not(target_family = "wasm"))]
+    let app = gpui_kit::application().with_assets(gpui_kit::assets::AllAssets);
+    let launch = move |cx: &mut App| {
         gpui_component::init(cx);
+        #[cfg(target_family = "wasm")]
+        web_fonts(cx);
         cx.set_quit_mode(gpui::QuitMode::Explicit);
         let inner = match install(opts.clone(), cx) {
             Ok(i) => i,
@@ -455,8 +548,29 @@ pub fn run(opts: Options) -> i32 {
             EXIT.store(1, Ordering::SeqCst);
             cx.quit();
         }
-    });
+    };
+    // The page's event loop owns the app in the browser: keep it alive.
+    #[cfg(target_family = "wasm")]
+    std::mem::forget(app.run_embedded(launch));
+    #[cfg(not(target_family = "wasm"))]
+    app.run(launch);
     EXIT.load(Ordering::SeqCst)
+}
+
+/// The browser has no system fonts: IBM Plex Sans, which gpui_web resolves
+/// `.SystemUIFont` to and which must exist before the first frame, as the
+/// UI font, and JetBrains Mono. From GPUI Kit's story-web (OFL, web/fonts).
+#[cfg(target_family = "wasm")]
+fn web_fonts(cx: &mut App) {
+    use std::borrow::Cow;
+    cx.text_system()
+        .add_fonts(vec![
+            Cow::Borrowed(include_bytes!("../../web/fonts/JetBrainsMono-Regular.ttf").as_slice()),
+            Cow::Borrowed(include_bytes!("../../web/fonts/IBMPlexSans-Regular.ttf").as_slice()),
+        ])
+        .expect("web fonts");
+    gpui_component::Theme::global_mut(cx).font_family = "IBM Plex Sans".into();
+    gpui_component::Theme::global_mut(cx).mono_font_family = "JetBrains Mono".into();
 }
 
 /// One pump: apply what the core queued, then act on what changed.

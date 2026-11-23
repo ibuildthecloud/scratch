@@ -1,0 +1,49 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>uitree in the browser</title>
+<style>
+  :root { --bg: #f6f6f4; --fg: #1c1c1a; --muted: #6b6b66; --line: #dcdcd6; --panel: #fff; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #161615; --fg: #ececea; --muted: #9a9a94; --line: #34342f; --panel: #1f1f1d; } }
+  body { margin: 0; padding: 24px 16px; background: var(--bg); color: var(--fg); font: 15px/1.5 system-ui, sans-serif; }
+  main { max-width: 1800px; margin: 0 auto; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  p { margin: 0 0 16px; color: var(--muted); max-width: 70ch; }
+  .row { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 520px), 1fr)); gap: 16px; }
+  section { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 12px; min-width: 0; }
+  h2 { font-size: 14px; margin: 0 0 8px; font-weight: 600; }
+  iframe { width: 100%; height: 640px; border: 0; display: block; background: #fff; border-radius: 4px; }
+  pre { font: 12px/1.5 ui-monospace, monospace; color: var(--muted); white-space: pre-wrap; margin: 8px 0 0; }
+  .src { margin-top: 16px; }
+  .src pre { color: var(--fg); max-height: 480px; overflow: auto; }
+</style>
+<main>
+  <h1>uitree in the browser</h1>
+  <p>Each example twice, each copy in its own h9 machine in a Web Worker (h9's browser host, its own 386 CPU), with <code>$ui</code> served by the uitree core in wasm on the page. Left: the GPUI renderer on gpui_web's canvas. Right: the terminal renderer drawing into xterm.js.</p>
+  <p><label>Example <select id="pick"></select></label> <a id="g1" target="_blank">GPUI alone</a> · <a id="t1" target="_blank">terminal alone</a></p>
+  <div class="row">
+    <section><h2>GPUI (gpui_web, WebGPU or WebGL2)</h2><iframe id="gpui" title="GPUI renderer"></iframe></section>
+    <section><h2>Terminal (Yoga layout, xterm.js)</h2><iframe id="tui" title="Terminal renderer"></iframe></section>
+  </div>
+  <section class="src"><h2 id="srcname">Source</h2><pre id="src"></pre></section>
+</main>
+<script type="module">
+import { apps } from './apps.js';
+const pick = document.getElementById('pick');
+for (const [k, a] of Object.entries(apps)) pick.add(new Option(`${k} (${a.title})`, k));
+const show = () => {
+  const k = pick.value;
+  history.replaceState(null, '', `?app=${k}`);
+  for (const [id, page, link] of [['gpui', 'gpui.html', 'g1'], ['tui', 'tui.html', 't1']]) {
+    document.getElementById(id).src = `${page}?app=${k}`;
+    document.getElementById(link).href = `${page}?app=${k}`;
+  }
+  // The app's own program, as the machine runs it.
+  const f = apps[k].files[0];
+  document.getElementById('srcname').textContent = `Source: ${f}`;
+  fetch(`apps/${k}/${f}`).then((r) => r.text()).then((t) => { if (pick.value === k) document.getElementById('src').textContent = t; });
+};
+pick.value = new URLSearchParams(location.search).get('app') ?? 'counter';
+pick.onchange = show;
+show();
+</script>

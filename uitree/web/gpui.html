@@ -1,0 +1,37 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>uitree on GPUI</title>
+<!-- uitree_web.wasm, with the core linked in, imports the core's platform. -->
+<script type="importmap">{ "imports": { "h9": "./uitcore-imports.js", "uit": "./uitcore-imports.js", "wasi_snapshot_preview1": "./uitcore-imports.js" } }</script>
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #fff; }
+  #err { position: absolute; inset: 8px; font: 13px ui-monospace, monospace; color: #b00; white-space: pre-wrap; pointer-events: none; }
+</style>
+<body>
+<div id="err"></div>
+<script type="module">
+import { startGpui } from './gpui.js';
+import { apps, argvFor, filesFor } from './apps.js';
+import { probe } from './probe.js';
+const q = new URLSearchParams(location.search);
+const app = q.get('app') ?? 'counter';
+const dec = new TextDecoder();
+const err = (s) => { document.getElementById('err').textContent += s + '\n'; };
+window.appLog = [];
+try {
+  if (!apps[app]) throw new Error(`no app ${app}`);
+  window.gpui = await startGpui({
+    argv: argvFor(app),
+    title: apps[app].title,
+    files: await filesFor(app),
+    onOutput: (fd, d) => { const s = dec.decode(d); window.appLog.push(s); console.log(`[${fd}] ${s}`); },
+    onExit: (code, msg) => { window.appExit = code; if (code) err(`exit ${code} ${msg ?? ''}`); },
+    log: (s) => { console.error(s); err(s); },
+    onCore: (c) => { window.core = c; window.probe = () => probe(c); },
+  });
+  parent.postMessage({ type: 'gpui-ready', timings: window.gpui.timings }, '*');
+} catch (e) {
+  err(e?.stack ?? String(e));
+}
+</script>
