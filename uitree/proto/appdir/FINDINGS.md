@@ -353,7 +353,7 @@ menu that opens from it, and a settings dialog (display name, email,
 theme, terminal font size, notifications). Everything was done through
 `~/uitree/agentui`: `cat` and `echo` on `ctl`, documents written to
 `tree` files, an image written to `asset/`, and `rc` handlers saved in
-`agentui/handlers/`. There were no restarts until the end, when one
+`examples/agentui/handlers/`. There were no restarts until the end, when one
 restart checked that it all comes back.
 
 **What felt good**
@@ -417,6 +417,16 @@ restart checked that it all comes back.
 6. **Test-harness noise, not uitree:** X keyboard focus moved to the
    desktop partway through, so scripted typing went nowhere. Scripted
    clicks also need the window's 2× scale applied to `bounds`.
+7. **Restarting raced with the previous run.** Every run used the same
+   socket path and mountpoint. A run still shutting down removed the next
+   run's socket or unmounted its mount, and a dead mount (server gone)
+   fails even `stat`, so `mountpoint` reports it as not mounted and
+   `mkdir` fails on it. The launcher died silently under `set -e` with
+   uutils' unhelpful `mkdir: Already exists`. Now each run has its own
+   socket, mounts are found in `/proc/mounts` and only unmounted by the
+   run whose socket they came from, a new run waits up to 5 seconds for a
+   stopping one, refuses to take a live run's mount, and clears a dead
+   one.
 
 ## What worked well
 

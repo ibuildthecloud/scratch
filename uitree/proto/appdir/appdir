@@ -26,19 +26,36 @@ dir=$(cd "$1" && pwd)
 name=$(basename "$dir")
 uitree_bin=${UITREE:-$here/../../renderer/gpui/target/release/uitree}
 export H9ROOT=${H9ROOT:-$here/../../third_party/hyper9/.local/9front/root-amd64}
-sock=${XDG_RUNTIME_DIR:-/tmp}/appdir-$(id -u)-$name.sock
+# One socket per run: a previous run's cleanup removes only its own.
+sock=${XDG_RUNTIME_DIR:-/tmp}/appdir-$(id -u)-$name-$$.sock
 mnt=${APPDIR_MNT:-$HOME/uitree/$name}
-
-mkdir -p "$dir/.appdir" "$mnt"
+die() { echo "appdir: $*" >&2; exit 1; }
+# Mounts are found in /proc/mounts, not with mountpoint(1): that stats
+# the directory, and a 9p mount whose server has gone fails the stat, so
+# it reads as not mounted. Each run's socket is its own, so the mount's
+# source says whose it is.
+mount_src() { awk -v m="$mnt" '$2 == m { s = $1 } END { print s }' /proc/mounts; }
+# Unmount ours only: a run still shutting down mustn't take the next one's.
+unmount() { [ "$(mount_src)" = "$sock" ] && 9umount "$mnt" 2>/dev/null || true; }
+mkdir -p "$dir/.appdir" || die "can't make $dir/.appdir"
 cp "$here/runner.rc" "$dir/.appdir/runner.rc"
-# A mount left by a crash.
-if mountpoint -q "$mnt"; then 9umount "$mnt" 2>/dev/null || true; fi
-rm -f "$sock"
+# A mount already there: another run's while its socket is live, else
+# one left by a crash (dead: it fails even a stat), which we remove.
+# A run that's stopping lets go within a moment: give it 5 seconds.
+src=$(mount_src); i=0
+while [ -n "$src" ] && [ -S "$src" ] && [ $i -lt 50 ]; do sleep 0.1; i=$((i + 1)); src=$(mount_src); done
+if [ -n "$src" ]; then
+	[ -S "$src" ] && die "$mnt is mounted by another run of $name ($src)"
+	9umount "$mnt" 2>/dev/null || true
+	[ -n "$(mount_src)" ] && die "can't unmount the dead mount at $mnt"
+fi
+[ -d "$mnt" ] || mkdir -p "$mnt" || die "can't make $mnt"
 
 cd "$dir"
 "$uitree_bin" -a "unix!$sock" -t "$name" rc .appdir/runner.rc &
 pid=$!
-trap 'kill $pid 2>/dev/null || true' INT TERM HUP
+# Stopped: unmount while the server is still there, then stop uitree.
+trap 'unmount; kill $pid 2>/dev/null || true' INT TERM HUP
 
 # Mount once the socket is there.
 while [ ! -S "$sock" ] && kill -0 $pid 2>/dev/null; do sleep 0.1; done
@@ -52,6 +69,6 @@ st=0
 wait $pid || st=$?
 # After a signal, wait returns before uitree has gone: wait again.
 while kill -0 $pid 2>/dev/null; do sleep 0.1; done
-if mountpoint -q "$mnt"; then 9umount "$mnt" 2>/dev/null || true; fi
+unmount
 rm -f "$sock"
 exit $st
