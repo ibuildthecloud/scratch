@@ -304,6 +304,28 @@ either way. The round trip is dominated by the app, which already talks
 noticeable; for comparison, PR 21 measured 28 to 50 ms for the same
 click in the browser.
 
+On an M3 Max (macOS, 120 Hz display), [bench/latency](../bench/latency/README.md)
+put the same click next to a native GPUI app. Times are p50 from the
+click handler: **state** is the new text in the renderer's hands,
+**frame** the next frame starting after it was drawn
+([results-mac.txt](../bench/latency/results-mac.txt)):
+
+| Renderer | App | state | frame |
+| --- | --- | --- | --- |
+| native GPUI, no uitree | in process | 0.04 ms | 14.2 ms |
+| built-in (C ABI) | Go on the host, 9P | 0.42 ms | 16.1 ms |
+| built-in (C ABI) | Go in h9 | 1.21 ms | 16.0 ms |
+| built-in (C ABI) | `counter.rc` in h9 | 31.7 ms | 41.7 ms |
+| 9P (Python, no drawing) | Go on the host | 0.71 ms | |
+| 9P (Python, no drawing) | Go in h9 | 1.20 ms | |
+| 9P (Python, no drawing) | `counter.rc` in h9 | 6.2 ms | |
+
+With a compiled app, uitree, 9P and h9 together cost under a frame over
+native GPUI, and a 9P renderer adds about 0.3 ms to the state point on
+top of the C ABI. The rc rows are dominated by rc (it runs `awk` for
+each click); row 4 vs row 7 also differ in timing method, so compare the
+compiled rows across renderers.
+
 What would hurt is a big rewrite on a slow renderer: a 15,000-node
 snapshot is 744 KB, and parsing is the renderer's cost, not the wire's.
 That is the case resync and order deltas are for.
