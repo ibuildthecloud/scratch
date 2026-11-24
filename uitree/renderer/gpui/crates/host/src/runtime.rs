@@ -644,7 +644,9 @@ pub(crate) fn apply_changes(inner: &Rc<Inner>, ch: Changes, cx: &mut App) {
         notify_window(inner, w, cx);
     }
     reconcile_windows(inner, cx);
-    if let Some(status) = ch.exited {
+    // Once we're quitting, the client's status is its answer to our
+    // hangup, not a failure of its own: keep the exit status as it is.
+    if let Some(status) = ch.exited.filter(|_| !inner.quitting.get()) {
         // The client finished: exit 0 for an empty exits string, else 1.
         if !status.is_empty() {
             eprintln!("uitree: {status}");
