@@ -1,0 +1,14 @@
+#!/bin/rc
+# big.rc: a list of N rows, then the counter's inc/n, for snapshot sizes.
+m=$ui/win/main
+N=$1
+echo 'set . title=Big size=400,600 : v-flex gap=2
+new text n text=0
+new div inc tag=inc on=click : p=4
+new text inc/t text=+
+new div rows : v-flex' >$m/ctl
+awk -v 'n='$N 'BEGIN{for(i=0;i<n;i++){print "new div rows/r" i " : h-flex gap=4"; print "new text rows/r" i "/a text=''row " i "'' : font-semibold"; print "new text rows/r" i "/b text=detail"}}' >$m/ctl
+n=0
+cat $ui/events | while(ev=`{read}){
+	if(~ $ev(1) click){ n=`{echo $n 1 + p | dc}; echo 'set n text='$n >$m/ctl }
+}

@@ -124,6 +124,7 @@ impl Render for WindowView {
     fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let t0 = crate::time::Instant::now();
         let host = self.host.clone();
+        crate::latency::on_render(&host, window);
         // `spacing` scales every rem-based length: the Tailwind scale words
         // (`p-4` is 1rem) and the rem text sizes, as in Tailwind.
         window.set_rem_size(gpui::px(host.rem.get()));

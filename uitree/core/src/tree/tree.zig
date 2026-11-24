@@ -145,6 +145,9 @@ pub const Changes = struct {
     removed: []const Handle = &.{},
     props: []const PropChange = &.{},
     cmds: []const HostCmd = &.{},
+    /// Files a renderer changed (`mirror`): not in `props`, since the
+    /// renderer that sent them has them, but other renderers don't.
+    mirrors: []const PropChange = &.{},
 };
 
 /// An event from the UI, or an echo. See `Tree.emit`.
@@ -210,6 +213,7 @@ const Log = struct {
     removed: std.ArrayList(Handle) = .empty,
     props: std.ArrayList(PropChange) = .empty,
     cmds: std.ArrayList(HostCmd) = .empty,
+    mirrors: std.ArrayList(PropChange) = .empty,
     /// Created and removed in the same pump: neither.
     view_created: std.ArrayList(Handle) = .empty,
     view_removed: std.ArrayList(Handle) = .empty,
@@ -556,7 +560,10 @@ pub const Tree = struct {
         for (l.dirty.items) |w| if (t.st.win(w) != null) try dirty.append(a, w);
         var props: std.ArrayList(PropChange) = .empty;
         for (l.props.items) |p| if (t.st.node(p.node) != null) try props.append(a, p);
+        var mirrors: std.ArrayList(PropChange) = .empty;
+        for (l.mirrors.items) |p| if (t.st.node(p.node) != null) try mirrors.append(a, p);
         return .{
+            .mirrors = mirrors.items,
             .dirty = dirty.items,
             .created = l.view_created.items,
             .removed = l.view_removed.items,
@@ -588,10 +595,19 @@ pub const Tree = struct {
     }
 
     fn addProp(t: *Tree, h: Handle, file: []const u8) Error!void {
-        // The renderer's own mirrors aren't reported back to it.
-        if (t.mirroring) return;
+        // The renderer's own mirrors aren't reported back to it as props.
+        if (t.mirroring) {
+            for (t.log.mirrors.items) |p| if (p.node == h and std.mem.eql(u8, p.file, file)) return;
+            return t.log.mirrors.append(t.log.arena.allocator(), .{ .node = h, .file = file });
+        }
         for (t.log.props.items) |p| if (p.node == h and std.mem.eql(u8, p.file, file)) return;
         try t.log.props.append(t.log.arena.allocator(), .{ .node = h, .file = file });
+    }
+
+    /// A command for the renderer that no write made: one a remote core
+    /// sent (render/dial.zig).
+    pub fn hostCmd(t: *Tree, c: HostCmd) Error!void {
+        return t.pushCmd(c);
     }
 
     fn pushCmd(t: *Tree, c: HostCmd) Error!void {
@@ -1001,6 +1017,16 @@ pub const Tree = struct {
     /// `focused` (0: none) focused. Sends `action ID PATH via=key win=W`
     /// and returns true if a binding in `keys` matched.
     pub fn key(t: *Tree, win: []const u8, stroke: []const u8, focused: Handle) Error!bool {
+        return t.keyAct(win, stroke, focused, true);
+    }
+
+    /// Whether `stroke` is bound in `win` (key's lookup, without acting
+    /// on it): a renderer drawing a remote app asks before it sends one.
+    pub fn keyBound(t: *Tree, win: []const u8, stroke: []const u8, focused: Handle) Error!bool {
+        return t.keyAct(win, stroke, focused, false);
+    }
+
+    fn keyAct(t: *Tree, win: []const u8, stroke: []const u8, focused: Handle, act: bool) Error!bool {
         const w = t.st.win(win) orelse return t.setErr(.not_found, win);
         var arena: std.heap.ArenaAllocator = .init(t.gpa);
         defer arena.deinit();
@@ -1029,6 +1055,7 @@ pub const Tree = struct {
             }
         }
         const b = best orelse return false;
+        if (!act) return true;
         // A disabled action's binding is taken but sends nothing.
         if (t.disabled.contains(b.action)) return true;
         _ = try t.emit(.{ .name = "action", .node = at, .key = b.action, .via = "key", .kind = .action });

@@ -30,7 +30,7 @@ fn main() {
             }
         }
     }
-    if rest.is_empty() && opts.bench.is_none() {
+    if rest.is_empty() && opts.bench.is_none() && std::env::var_os("UITREE_HOST_APP").is_none() {
         eprintln!("usage: uitree [-k] [-t title] [--root DIR] [--bench N] prog [args...]");
         std::process::exit(2);
     }

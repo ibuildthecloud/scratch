@@ -112,6 +112,33 @@ pub fn build(b: *std.Build) void {
         }
     }
 
+    // A host with no renderer of its own, for 9P renderers and browsers
+    // (protocols/render.md): `zig build remote`.
+    // Not installed by default.
+    const remote = b.addExecutable(.{
+        .name = "uitree-remote",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/remote/main.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{.{ .name = "uitcore", .module = core }},
+        }),
+    });
+    const remote_step = b.step("remote", "Build uitree-remote, a host that only serves renderers");
+    const install_remote = b.addInstallArtifact(remote, .{});
+    remote_step.dependOn(&install_remote.step);
+    // As for uitree-headless: HVF needs the framework and the entitlement.
+    if (with_h9 and target.result.os.tag == .macos) {
+        remote.root_module.linkFramework("Hypervisor", .{});
+        if (b.graph.host.result.os.tag == .macos) {
+            const sign = b.addSystemCommand(&.{ "codesign", "--force", "--sign", "-", "--entitlements" });
+            sign.addFileArg(b.path("../third_party/hyper9/h9.entitlements"));
+            sign.addArg(b.getInstallPath(.bin, remote.out_filename));
+            sign.step.dependOn(&install_remote.step);
+            remote_step.dependOn(&sign.step);
+        }
+    }
+
     // W4: src/ninep/wire.zig is hyper9's dotl/wire.zig, vendored (see its
     // header). This fails when the submodule's copy has moved on.
     const check_wire = b.addSystemCommand(&.{ "sh", "-c", "tail -n +6 src/ninep/wire.zig | cmp -s - ../third_party/hyper9/src/dotl/wire.zig || { echo 'src/ninep/wire.zig differs from hyper9 src/dotl/wire.zig: re-vendor it' >&2; exit 1; }" });

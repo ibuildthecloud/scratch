@@ -1,0 +1,1095 @@
+Apple M3 Max, macOS 15.8.1 (24H32), built-in Liquid Retina XDR display at 120 Hz ProMotion (adaptive)
+== build
+warning: built-in root: no slim-11952-arm64 in /private/tmp/scratch/uitree/third_party/hyper9/.local/9front, so arm64 gets the skeleton only; zig build slim -Darch=arm64 makes it
+warning: built-in root: no slim-11952-amd64 in /private/tmp/scratch/uitree/third_party/hyper9/.local/9front, so amd64 gets the skeleton only; zig build slim -Darch=amd64 makes it
+warning: built-in root: no slim-11952-386 in /private/tmp/scratch/uitree/third_party/hyper9/.local/9front, so 386 gets the skeleton only; zig build slim -Darch=386 makes it
+/private/tmp/scratch/uitree/core/zig-out/bin/uitree-headless: replacing existing signature
+warning: built-in root: no slim-11952-arm64 in /private/tmp/scratch/uitree/third_party/hyper9/.local/9front, so arm64 gets the skeleton only; zig build slim -Darch=arm64 makes it
+warning: built-in root: no slim-11952-amd64 in /private/tmp/scratch/uitree/third_party/hyper9/.local/9front, so amd64 gets the skeleton only; zig build slim -Darch=amd64 makes it
+warning: built-in root: no slim-11952-386 in /private/tmp/scratch/uitree/third_party/hyper9/.local/9front, so 386 gets the skeleton only; zig build slim -Darch=386 makes it
+/private/tmp/scratch/uitree/core/zig-out/bin/uitree-remote: replacing existing signature
+    Updating crates.io index
+    Updating git repository `https://github.com/longbridge/gpui-component`
+ Downloading crates ...
+  Downloaded aligned v0.4.3
+  Downloaded bit-set v0.8.0
+  Downloaded siphasher v1.0.4
+  Downloaded bit_field v0.10.4
+  Downloaded core-graphics-types v0.2.0
+  Downloaded aligned-vec v0.6.4
+  Downloaded errno v0.3.15
+  Downloaded event-listener-strategy v0.5.4
+  Downloaded dirs-sys v0.4.1
+  Downloaded futf v0.1.5
+  Downloaded arrayref v0.3.9
+  Downloaded simplecss v0.2.2
+  Downloaded async-channel v2.5.0
+  Downloaded accesskit v0.24.1
+  Downloaded accesskit_consumer v0.38.0
+  Downloaded foreign-types-macros v0.2.4
+  Downloaded arg_enum_proc_macro v0.3.4
+  Downloaded enum-iterator v2.3.0
+  Downloaded as-slice v0.2.1
+  Downloaded byteorder-lite v0.1.0
+  Downloaded globset v0.4.21
+  Downloaded color_quant v1.1.0
+  Downloaded bytemuck_derive v1.12.1
+  Downloaded core-text v21.0.0
+  Downloaded either v1.19.0
+  Downloaded encoding_rs_io v0.1.8
+  Downloaded arraydeque v0.5.1
+  Downloaded concurrent-queue v2.5.0
+  Downloaded async-process v2.5.0
+  Downloaded block2 v0.5.1
+  Downloaded fdeflate v0.3.7
+  Downloaded smol_str v0.3.7
+  Downloaded async-fs v2.2.0
+  Downloaded async-signal v0.2.14
+  Downloaded dirs-sys v0.5.0
+  Downloaded form_urlencoded v1.2.3
+  Downloaded dirs v5.0.1
+  Downloaded enumn v0.1.14
+  Downloaded foreign-types-shared v0.3.1
+  Downloaded smallvec v1.16.6
+  Downloaded float-ord v0.3.2
+  Downloaded async-executor v1.14.1
+  Downloaded bit-vec v0.8.0
+  Downloaded dyn-clone v1.0.20
+  Downloaded avif-serialize v0.8.9
+  Downloaded bincode v1.3.3
+  Downloaded data-url v0.3.2
+  Downloaded dirs v6.0.0
+  Downloaded equator v0.4.2
+  Downloaded equator-macro v0.4.2
+  Downloaded float-cmp v0.9.0
+  Downloaded float_next_after v1.0.0
+  Downloaded foreign-types v0.5.0
+  Downloaded bitflags v1.3.2
+  Downloaded pico-args v0.5.0
+  Downloaded accesskit_macos v0.26.3
+  Downloaded fax v0.2.7
+  Downloaded fluent-uri v0.1.4
+  Downloaded glob v0.3.4
+  Downloaded crossbeam-deque v0.8.8
+  Downloaded etagere v0.2.15
+  Downloaded similar v2.7.0
+  Downloaded spin v0.9.9
+  Downloaded core-graphics v0.24.0
+  Downloaded core_maths v0.1.1
+  Downloaded enum-iterator-derive v1.5.0
+  Downloaded async-task v4.7.1
+  Downloaded base62 v2.2.6
+  Downloaded async-lock v3.5.0
+  Downloaded blocking v1.7.0
+  Downloaded crc32fast v1.5.5
+  Downloaded embed-resource v3.0.12
+  Downloaded addr2line v0.27.1
+  Downloaded built v0.8.1
+  Downloaded event-listener v5.4.2
+  Downloaded jiff-static v1.0.2
+  Downloaded async-net v2.0.0
+  Downloaded av1-grain v0.2.5
+  Downloaded gif v0.14.2
+  Downloaded profiling-procmacros v1.0.18
+  Downloaded crossbeam-epoch v0.9.21
+  Downloaded phf_generator v0.11.3
+  Downloaded const-oid v0.10.3
+  Downloaded walkdir v2.5.1
+  Downloaded annotate-snippets v0.12.18
+  Downloaded bitstream-io v4.10.0
+  Downloaded ref-cast-impl v1.0.27
+  Downloaded heck v0.4.1
+  Downloaded backtrace v0.3.77
+  Downloaded arc-swap v1.9.5
+  Downloaded async-io v2.6.0
+  Downloaded euclid v0.22.14
+  Downloaded flume v0.12.0
+  Downloaded fontdb v0.23.0
+  Downloaded weezl v0.1.12
+  Downloaded xml5ever v0.18.1
+  Downloaded lyon_path v1.0.19
+  Downloaded bytemuck v1.25.2
+  Downloaded bytes v1.12.2
+  Downloaded ctor v1.0.14
+  Downloaded flate2 v1.1.11
+  Downloaded url v2.5.9
+  Downloaded markup5ever v0.12.1
+  Downloaded bumpalo v3.20.4
+  Downloaded cc v1.11.3
+  Downloaded fancy-regex v0.16.2
+  Downloaded rand_core v0.9.5
+  Downloaded jiff-core v1.0.1
+  Downloaded miniz_oxide v0.9.1
+  Downloaded nohash-hasher v0.2.0
+  Downloaded objc2-core-image v0.2.2
+  Downloaded toml_datetime v0.6.11
+  Downloaded mac v0.1.1
+  Downloaded option-ext v0.2.0
+  Downloaded toml_writer v1.2.0+spec-1.1.0
+  Downloaded triomphe v0.1.17
+  Downloaded smol v2.0.2
+  Downloaded cbindgen v0.28.0
+  Downloaded winnow v0.7.15
+  Downloaded objc-sys v0.3.5
+  Downloaded objc2-core-graphics v0.3.2
+  Downloaded objc2-core-image v0.3.2
+  Downloaded exr v1.74.3
+  Downloaded itertools v0.14.0
+  Downloaded unicode-ccc v0.4.0
+  Downloaded unicode-vo v0.1.0
+  Downloaded unicode-bidi-mirroring v0.4.0
+  Downloaded loop9 v0.1.5
+  Downloaded objc2-io-surface v0.3.2
+  Downloaded pathfinder_geometry v0.5.1
+  Downloaded phf_codegen v0.11.3
+  Downloaded phf_shared v0.11.3
+  Downloaded pin-project-internal v1.2.0
+  Downloaded precomputed-hash v0.1.1
+  Downloaded quick-error v2.0.1
+  Downloaded ref-cast v1.0.27
+  Downloaded rust-embed-impl v8.14.0
+  Downloaded rust-embed-utils v8.14.0
+  Downloaded same-file v1.0.6
+  Downloaded gpui-pre-refineable v0.3.12
+  Downloaded gpui-pre-ztracing v0.3.12
+  Downloaded icu_locale_fallback_data v2.4.0
+  Downloaded wasm-bindgen-shared v0.2.130
+  Downloaded objc2-user-notifications v0.3.2
+  Downloaded pastey v0.1.1
+  Downloaded v_frame v0.3.9
+  Downloaded jobserver v0.1.35
+  Downloaded objc2-quartz-core v0.2.2
+  Downloaded string_cache v0.8.9
+  Downloaded waker-fn v1.2.0
+  Downloaded mime v0.3.18
+  Downloaded gimli v0.34.0
+  Downloaded pollster v0.4.0
+  Downloaded mach2 v0.6.0
+  Downloaded tiny-skia-path v0.11.4
+  Downloaded toml v0.8.23
+  Downloaded tempfile v3.27.0
+  Downloaded lyon_geom v1.0.20
+  Downloaded notify v8.2.2
+  Downloaded bstr v1.14.0
+  Downloaded zune-core v0.5.3
+  Downloaded wasm-bindgen v0.2.130
+  Downloaded profiling v1.0.18
+  Downloaded objc2-cloud-kit v0.3.2
+  Downloaded lsp-types v0.97.0
+  Downloaded unicode-linebreak v0.1.5
+  Downloaded zune-jpeg v0.5.15
+  Downloaded maybe-rayon v0.1.1
+  Downloaded unicode-id v0.3.7
+  Downloaded unicode-properties v0.1.5
+  Downloaded linktime-proc-macro v0.2.3
+  Downloaded notify-types v2.3.1
+  Downloaded tiff v0.11.3
+  Downloaded objc2-core-text v0.3.2
+  Downloaded link-section v0.19.4
+  Downloaded wasm-bindgen-macro v0.2.130
+  Downloaded tendril v0.4.3
+  Downloaded rust-i18n-macro v4.2.4
+  Downloaded strict-num v0.1.1
+  Downloaded objc2-core-services v0.3.2
+  Downloaded instant v0.1.13
+  Downloaded objc2-quartz-core v0.3.2
+  Downloaded hash32 v0.3.1
+  Downloaded string_cache_codegen v0.5.4
+  Downloaded nom v8.0.0
+  Downloaded lazy_static v1.5.1
+  Downloaded xmlwriter v0.1.0
+  Downloaded objc2-metal v0.2.2
+  Downloaded wasm-bindgen-macro-support v0.2.130
+  Downloaded lyon_tessellation v1.0.23
+  Downloaded serde_urlencoded v0.7.1
+  Downloaded itertools v0.13.0
+  Downloaded unicase v2.10.0
+  Downloaded av-scenechange v0.14.1
+  Downloaded y4m v0.8.0
+  Downloaded inventory v0.3.25
+  Downloaded toml_write v0.1.2
+  Downloaded globwalk v0.8.1
+  Downloaded serde_spanned v1.1.3
+  Downloaded zlib-rs v0.6.8
+  Downloaded toml_parser v1.1.6+spec-1.1.0
+  Downloaded unicode-bidi v0.3.18
+  Downloaded ttf-parser v0.25.1
+  Downloaded usvg v0.46.0
+  Downloaded zed-font-kit v0.14.1-zed
+  Downloaded objc2-metal v0.3.2
+  Downloaded uuid v1.29.3
+  Downloaded serde_repr v0.1.21
+  Downloaded noop_proc_macro v0.3.0
+  Downloaded lyon v1.0.19
+  Downloaded multiversion_no_op v1.0.0
+  Downloaded itoa v1.0.19
+  Downloaded lebe v0.5.3
+  Downloaded gpui-pre-collections v0.3.12
+  Downloaded num-derive v0.4.2
+  Downloaded normpath v1.5.2
+  Downloaded markup5ever_rcdom v0.3.0
+  Downloaded encoding_rs v0.8.44
+  Downloaded zune-inflate v0.2.54
+  Downloaded lyon_algorithms v1.0.22
+  Downloaded serde_spanned v0.6.9
+  Downloaded simd_helpers v0.1.0
+  Downloaded gpui-pre-ztracing-macro v0.3.12
+  Downloaded unicode-width v0.2.3
+  Downloaded taffy v0.15.1
+  Downloaded gpui-pre-shared-string v0.3.12
+  Downloaded toml_edit v0.25.20+spec-1.1.0
+  Downloaded objc2-app-kit v0.2.2
+  Downloaded kurbo v0.13.1
+  Downloaded objc2 v0.5.3
+  Downloaded syn v3.0.10
+  Downloaded gpui-pre-util v0.3.12
+  Downloaded zerocopy-derive v0.8.64
+  Downloaded libm v0.2.16
+  Downloaded svg_fmt v0.4.5
+  Downloaded sys-locale v0.3.2
+  Downloaded objc2-uniform-type-identifiers v0.3.2
+  Downloaded str_indices v0.4.4
+  Downloaded paste v1.0.15
+  Downloaded objc2-core-data v0.3.2
+  Downloaded svgtypes v0.16.2
+  Downloaded objc2-core-video v0.3.2
+  Downloaded object v0.40.0
+  Downloaded toml_edit v0.22.27
+  Downloaded jiff v1.0.2
+  Downloaded new_debug_unreachable v1.0.6
+  Downloaded pin-project-lite v0.2.18
+  Downloaded memmap2 v0.9.12
+  Downloaded zerocopy v0.8.64
+  Downloaded unicode-script v0.5.9
+  Downloaded pathfinder_simd v0.5.6
+  Downloaded piper v0.2.5
+  Downloaded polycool v0.4.0
+  Downloaded rgb v0.8.53
+  Downloaded moxcms v0.8.1
+  Downloaded tiny-skia v0.11.4
+  Downloaded objc2-foundation v0.2.2
+  Downloaded markdown v1.0.0
+  Downloaded shellexpand v3.1.2
+  Downloaded syntect v5.3.0
+  Downloaded gpui-fast-macros v0.1.17
+  Downloaded objc2-app-kit v0.3.2
+  Downloaded gpui-pre-derive-refineable v0.3.12
+  Downloaded raw-window-handle v0.6.2
+  Downloaded rand_chacha v0.9.0
+  Downloaded gpui-pre-macros v0.3.12
+  Downloaded rust-i18n-support v4.2.4
+  Downloaded gpui-pre-sum-tree v0.3.12
+  Downloaded ravif v0.13.0
+  Downloaded gpui-pre-http-client v0.3.12
+  Downloaded schemars_derive v1.2.3
+  Downloaded icu_locale_fallback v2.4.0
+  Downloaded imagesize v0.14.0
+  Downloaded two-face v0.4.5
+  Downloaded phf v0.11.3
+  Downloaded rustc-demangle v0.1.28
+  Downloaded seahash v4.1.0
+  Downloaded rust-i18n v4.2.4
+  Downloaded objc2-core-data v0.2.2
+  Downloaded rand v0.8.8
+  Downloaded serde_derive_internals v0.30.0
+  Downloaded simd-adler32 v0.3.10
+  Downloaded imgref v1.12.3
+  Downloaded gpui-pre-scheduler v0.3.12
+  Downloaded no_std_io2 v0.9.4
+  Downloaded pin-project v1.2.0
+  Downloaded num-rational v0.4.2
+  Downloaded half v2.7.1
+  Downloaded roxmltree v0.21.2
+  Downloaded qoi v0.4.1
+  Downloaded polling v3.11.0
+  Downloaded resvg v0.46.0
+  Downloaded toml v1.2.2+spec-1.1.0
+  Downloaded image-webp v0.2.4
+  Downloaded html5ever v0.27.0
+  Downloaded ignore v0.4.34
+  Downloaded schemars v1.2.3
+  Downloaded gpui-pre-platform v0.3.12
+  Downloaded rand v0.9.5
+  Downloaded png v0.17.16
+  Downloaded ropey v2.0.0-beta.1
+  Downloaded png v0.18.1
+  Downloaded itertools v0.11.0
+  Downloaded gpui-pre-macos v0.3.12
+  Downloaded heapless v0.9.4
+  Downloaded serde_json v1.0.154
+  Downloaded rayon v1.12.0
+  Downloaded regex v1.13.2
+  Downloaded granit-parser v1.3.0
+  Downloaded gpui-pre-apple v0.3.12
+  Downloaded rustybuzz v0.20.1
+  Downloaded image v0.25.10
+  Downloaded regex-syntax v0.8.12
+  Downloaded objc2-foundation v0.3.2
+  Downloaded rustix v1.1.6
+  Downloaded regex-automata v0.4.19
+  Downloaded serde-saphyr v1.3.0
+  Downloaded rust-embed v8.14.0
+  Downloaded pxfm v0.1.30
+  Downloaded gpui-fast v0.1.17
+  Downloaded rav1e v0.8.1
+  Downloaded icu_segmenter_data v2.4.0
+  Downloaded icu_segmenter v2.4.0
+  Downloaded gpui-pre v0.3.12
+   Compiling proc-macro2 v1.0.107
+   Compiling unicode-ident v1.0.27
+   Compiling quote v1.0.47
+   Compiling libc v0.2.191
+   Compiling serde_core v1.0.229
+   Compiling cfg-if v1.0.5
+   Compiling bitflags v2.13.2
+   Compiling autocfg v1.5.1
+   Compiling memchr v2.8.3
+   Compiling objc2-encode v4.1.0
+   Compiling smallvec v1.16.6
+   Compiling stable_deref_trait v1.2.1
+   Compiling serde v1.0.229
+   Compiling pin-project-lite v0.2.18
+   Compiling libm v0.2.16
+   Compiling objc2 v0.6.5
+   Compiling crossbeam-utils v0.8.23
+   Compiling crossbeam-epoch v0.9.21
+   Compiling zmij v1.0.23
+   Compiling futures-core v0.3.34
+   Compiling simd-adler32 v0.3.10
+   Compiling crossbeam-deque v0.8.8
+   Compiling adler2 v2.0.1
+   Compiling futures-io v0.3.34
+   Compiling num-traits v0.2.19
+   Compiling parking v2.2.1
+   Compiling hashbrown v0.17.1
+   Compiling equivalent v1.0.3
+   Compiling indexmap v2.14.2
+   Compiling miniz_oxide v0.9.1
+   Compiling log v0.4.35
+   Compiling writeable v0.6.4
+   Compiling getrandom v0.4.3
+   Compiling scopeguard v1.2.0
+   Compiling crc32fast v1.5.5
+   Compiling siphasher v1.0.4
+   Compiling lock_api v0.4.14
+   Compiling slab v0.4.12
+   Compiling arrayvec v0.7.8
+   Compiling litemap v0.8.3
+   Compiling zerocopy v0.8.64
+   Compiling foldhash v0.2.0
+   Compiling parking_lot_core v0.9.12
+   Compiling semver v1.0.28
+   Compiling winnow v1.0.5
+   Compiling rustversion v1.0.23
+   Compiling utf_types v1.0.0
+   Compiling utf8_iter v1.1.0
+   Compiling concurrent-queue v2.5.0
+   Compiling toml_parser v1.1.6+spec-1.1.0
+   Compiling syn v3.0.10
+   Compiling syn v2.0.119
+   Compiling toml_datetime v1.1.3+spec-1.1.0
+   Compiling rustc_version v0.4.1
+   Compiling objc2-core-foundation v0.3.2
+   Compiling block2 v0.6.2
+   Compiling event-listener v5.4.2
+   Compiling aho-corasick v1.1.5
+   Compiling itoa v1.0.19
+   Compiling regex-syntax v0.8.12
+   Compiling bytemuck v1.25.2
+   Compiling core-foundation-sys v0.8.7
+   Compiling parking_lot v0.12.5
+   Compiling event-listener-strategy v0.5.4
+   Compiling flate2 v1.1.11
+   Compiling futures-sink v0.3.34
+   Compiling version_check v0.9.5
+   Compiling icu_properties_data v2.4.0
+   Compiling icu_normalizer_data v2.4.0
+   Compiling slotmap v1.1.1
+   Compiling objc2-foundation v0.3.2
+   Compiling euclid v0.22.14
+   Compiling miniz_oxide v0.8.9
+   Compiling bstr v1.14.0
+   Compiling rayon-core v1.13.0
+   Compiling getrandom v0.3.4
+   Compiling same-file v1.0.6
+   Compiling regex-automata v0.4.19
+   Compiling serde_json v1.0.154
+   Compiling async-task v4.7.1
+   Compiling once_cell v1.21.4
+   Compiling walkdir v2.5.1
+   Compiling synstructure v0.14.0
+   Compiling futures-channel v0.3.34
+   Compiling core_maths v0.1.1
+   Compiling fdeflate v0.3.7
+   Compiling toml_write v0.1.2
+   Compiling bitflags v1.3.2
+   Compiling futures-task v0.3.34
+   Compiling float-cmp v0.9.0
+   Compiling fastrand v2.5.0
+   Compiling either v1.19.0
+   Compiling rand_core v0.6.4
+   Compiling winnow v0.7.15
+   Compiling anyhow v1.0.104
+   Compiling rand v0.8.8
+   Compiling globset v0.4.21
+   Compiling strict-num v0.1.1
+   Compiling ttf-parser v0.25.1
+   Compiling serde_derive v1.0.229
+   Compiling zerofrom-derive v0.1.8
+   Compiling yoke-derive v0.8.4
+   Compiling zerovec-derive v0.11.7
+   Compiling displaydoc v0.2.7
+   Compiling zerocopy-derive v0.8.64
+   Compiling futures-macro v0.3.34
+   Compiling lyon_geom v1.0.20
+   Compiling async-channel v2.5.0
+   Compiling phf_shared v0.11.3
+   Compiling dispatch2 v0.3.1
+   Compiling serde_spanned v1.1.3
+   Compiling zerofrom v0.1.8
+   Compiling futures-util v0.3.34
+   Compiling polycool v0.4.0
+   Compiling shlex v2.0.1
+   Compiling zune-core v0.5.3
+   Compiling thiserror v2.0.21
+   Compiling icu_locale_fallback_data v2.4.0
+   Compiling yoke v0.8.4
+   Compiling find-msvc-tools v0.1.15
+   Compiling quick-error v2.0.1
+   Compiling percent-encoding v2.3.2
+   Compiling arrayref v0.3.9
+   Compiling toml_writer v1.2.0+spec-1.1.0
+   Compiling weezl v0.1.12
+   Compiling byteorder v1.5.0
+   Compiling zerovec v0.11.9
+   Compiling zerotrie v0.2.5
+   Compiling ref-cast v1.0.27
+   Compiling toml v1.2.2+spec-1.1.0
+   Compiling tiny-skia-path v0.11.4
+   Compiling form_urlencoded v1.2.3
+   Compiling tinystr v0.8.5
+   Compiling potential_utf v0.1.6
+   Compiling icu_collections v2.4.0
+   Compiling toml_datetime v0.6.11
+   Compiling icu_locale_core v2.4.0
+   Compiling serde_spanned v0.6.9
+   Compiling toml_edit v0.22.27
+   Compiling cc v1.11.3
+   Compiling futures-executor v0.3.34
+   Compiling zune-jpeg v0.5.15
+   Compiling kurbo v0.13.1
+   Compiling lyon_path v1.0.19
+   Compiling phf_generator v0.11.3
+   Compiling enumn v0.1.14
+   Compiling tracing-attributes v0.1.31
+   Compiling rand_core v0.9.5
+   Compiling icu_provider v2.4.0
+   Compiling ref-cast-impl v1.0.27
+   Compiling thiserror-impl v2.0.21
+   Compiling icu_properties v2.4.0
+   Compiling icu_normalizer v2.4.0
+   Compiling toml v0.8.23
+   Compiling uuid v1.29.3
+   Compiling ppv-lite86 v0.2.21
+   Compiling half v2.7.1
+   Compiling futures-lite v2.6.1
+   Compiling serde_derive_internals v0.30.0
+   Compiling tracing-core v0.1.36
+   Compiling toml_edit v0.25.20+spec-1.1.0
+   Compiling errno v0.3.15
+   Compiling memmap2 v0.9.12
+   Compiling bytes v1.12.2
+   Compiling idna_adapter v1.2.2
+   Compiling heapless v0.9.4
+   Compiling rustix v1.1.6
+   Compiling icu_segmenter_data v2.4.0
+   Compiling typenum v1.20.1
+   Compiling color_quant v1.1.0
+   Compiling unicode-properties v0.1.5
+   Compiling unicode-bidi-mirroring v0.4.0
+   Compiling unicode-script v0.5.9
+   Compiling gpui-pre-ztracing v0.3.12
+   Compiling heck v0.5.0
+   Compiling gimli v0.34.0
+   Compiling unicode-segmentation v1.13.3
+   Compiling byteorder-lite v0.1.0
+   Compiling unicode-ccc v0.4.0
+   Compiling tinyvec v1.13.3
+   Compiling gif v0.14.2
+   Compiling schemars_derive v1.2.3
+   Compiling image-webp v0.2.4
+   Compiling rustybuzz v0.20.1
+   Compiling hybrid-array v0.4.15
+   Compiling convert_case v0.10.0
+   Compiling fontdb v0.23.0
+   Compiling http v1.5.0
+   Compiling proc-macro-crate v3.5.0
+   Compiling tracing v0.1.44
+   Compiling idna v1.1.0
+   Compiling accesskit v0.24.1
+   Compiling rand_chacha v0.9.0
+   Compiling svgtypes v0.16.2
+   Compiling embed-resource v3.0.12
+   Compiling futures v0.3.34
+   Compiling objc2-metal v0.3.2
+   Compiling addr2line v0.27.1
+   Compiling hash32 v0.3.1
+   Compiling rayon v1.12.0
+   Compiling png v0.17.16
+   Compiling iana-time-zone v0.1.65
+   Compiling simplecss v0.2.2
+   Compiling spin v0.9.9
+   Compiling zune-inflate v0.2.54
+   Compiling roxmltree v0.21.2
+   Compiling object v0.40.0
+   Compiling ryu v1.0.23
+   Compiling lebe v0.5.3
+   Compiling unicode-vo v0.1.0
+   Compiling data-url v0.3.2
+   Compiling pico-args v0.5.0
+   Compiling new_debug_unreachable v1.0.6
+   Compiling xmlwriter v0.1.0
+   Compiling dyn-clone v1.0.20
+   Compiling pxfm v0.1.30
+   Compiling float_next_after v1.0.0
+   Compiling fax v0.2.7
+   Compiling bit_field v0.10.4
+   Compiling rustc-demangle v0.1.28
+   Compiling unicode-bidi v0.3.18
+   Compiling imagesize v0.14.0
+   Compiling base64 v0.22.1
+   Compiling gpui-pre-ztracing-macro v0.3.12
+   Compiling tiff v0.11.3
+   Compiling usvg v0.46.0
+   Compiling exr v1.74.3
+   Compiling lyon_tessellation v1.0.23
+   Compiling schemars v1.2.3
+   Compiling objc2-core-video v0.3.2
+   Compiling serde_urlencoded v0.7.1
+   Compiling tiny-skia v0.11.4
+   Compiling flume v0.12.0
+   Compiling chrono v0.4.45
+   Compiling icu_locale_fallback v2.4.0
+   Compiling moxcms v0.8.1
+   Compiling gpui-pre v0.3.12
+   Compiling rand v0.9.5
+   Compiling http-body v1.1.0
+   Compiling url v2.5.9
+   Compiling backtrace v0.3.77
+   Compiling derive_more-impl v2.1.1
+   Compiling strum_macros v0.28.0
+   Compiling gpui-pre-util v0.3.12
+   Compiling lyon_algorithms v1.0.22
+   Compiling phf_codegen v0.11.3
+   Compiling string_cache_codegen v0.5.4
+   Compiling gpui-pre-derive-refineable v0.3.12
+   Compiling profiling-procmacros v1.0.18
+   Compiling foreign-types-macros v0.2.4
+   Compiling pin-project-internal v1.2.0
+   Compiling png v0.18.1
+   Compiling encoding_rs v0.8.44
+   Compiling core-foundation v0.10.1
+   Compiling qoi v0.4.1
+   Compiling rgb v0.8.53
+   Compiling smol_str v0.3.7
+   Compiling async-io v2.6.0
+   Compiling svg_fmt v0.4.5
+   Compiling rustc-hash v2.1.3
+   Compiling web-time v1.1.0
+   Compiling mac v0.1.1
+   Compiling foreign-types-shared v0.3.1
+   Compiling objc-sys v0.3.5
+   Compiling foreign-types v0.5.0
+   Compiling futf v0.1.5
+   Compiling etagere v0.2.15
+   Compiling pin-project v1.2.0
+   Compiling gpui-pre-scheduler v0.3.12
+   Compiling gpui-pre-collections v0.3.12
+   Compiling image v0.25.10
+   Compiling gpui-pre-shared-string v0.3.12
+   Compiling strum v0.28.0
+   Compiling resvg v0.46.0
+   Compiling core-graphics-types v0.2.0
+   Compiling profiling v1.0.18
+   Compiling derive_more v2.1.1
+   Compiling gpui-pre-refineable v0.3.12
+   Compiling markup5ever v0.12.1
+   Compiling lyon v1.0.19
+   Compiling icu_segmenter v2.4.0
+   Compiling polling v3.11.0
+   Compiling gpui-pre-http-client v0.3.12
+   Compiling gpui-pre-sum-tree v0.3.12
+   Compiling ignore v0.4.34
+   Compiling gpui-pre-macros v0.3.12
+   Compiling crypto-common v0.2.2
+   Compiling block-buffer v0.12.1
+   Compiling regex v1.13.2
+   Compiling taffy v0.15.1
+   Compiling itertools v0.14.0
+   Compiling objc2-core-graphics v0.3.2
+   Compiling pathfinder_simd v0.5.6
+   Compiling num_cpus v1.17.0
+   Compiling spin v0.10.1
+   Compiling utf-8 v0.7.6
+   Compiling pollster v0.4.0
+   Compiling option-ext v0.2.0
+   Compiling const-oid v0.10.3
+   Compiling multiversion_no_op v1.0.0
+   Compiling cbindgen v0.28.0
+   Compiling inventory v0.3.25
+   Compiling raw-window-handle v0.6.2
+   Compiling seahash v4.1.0
+   Compiling atomic-waker v1.1.2
+   Compiling precomputed-hash v0.1.1
+   Compiling waker-fn v1.2.0
+   Compiling simdutf8 v0.1.5
+   Compiling unicase v2.10.0
+   Compiling piper v0.2.5
+   Compiling string_cache v0.8.9
+   Compiling tempfile v3.27.0
+   Compiling digest v0.11.3
+   Compiling globwalk v0.8.1
+   Compiling mime_guess v2.0.5
+   Compiling dirs-sys v0.5.0
+   Compiling tendril v0.4.3
+   Compiling objc2-quartz-core v0.3.2
+   Compiling core-graphics v0.24.0
+   Compiling phf v0.11.3
+   Compiling objc2-core-text v0.3.2
+   Compiling cpufeatures v0.3.1
+   Compiling heck v0.4.1
+   Compiling unicode-width v0.2.3
+   Compiling arraydeque v0.5.1
+   Compiling anstyle v1.0.14
+   Compiling dirs-sys v0.4.1
+   Compiling encoding_rs_io v0.1.8
+   Compiling granit-parser v1.3.0
+   Compiling annotate-snippets v0.12.18
+   Compiling sha2 v0.11.1
+   Compiling core-text v21.0.0
+   Compiling objc2 v0.5.3
+   Compiling dirs v6.0.0
+   Compiling blocking v1.7.0
+   Compiling objc2-core-image v0.3.2
+   Compiling objc2-core-data v0.3.2
+   Compiling objc2-uniform-type-identifiers v0.3.2
+   Compiling objc2-cloud-kit v0.3.2
+   Compiling signal-hook-registry v1.4.8
+   Compiling html5ever v0.27.0
+   Compiling arc-swap v1.9.5
+   Compiling async-lock v3.5.0
+   Compiling nohash-hasher v0.2.0
+   Compiling base64 v0.23.1
+   Compiling mime v0.3.18
+   Compiling bit-vec v0.8.0
+   Compiling zed-font-kit v0.14.1-zed
+   Compiling itertools v0.11.0
+   Compiling bit-set v0.8.0
+   Compiling serde-saphyr v1.3.0
+   Compiling triomphe v0.1.17
+   Compiling async-signal v0.2.14
+   Compiling objc2-foundation v0.2.2
+   Compiling objc2-app-kit v0.3.2
+   Compiling shellexpand v3.1.2
+   Compiling rust-embed-utils v8.14.0
+   Compiling pathfinder_geometry v0.5.1
+   Compiling dirs v5.0.1
+   Compiling hashbrown v0.16.1
+   Compiling lazy_static v1.5.1
+   Compiling gpui-kit-assets v0.10.0 (https://github.com/longbridge/gpui-component?rev=cf945af2d6491ff9bc175f3f1656a14793987db2#cf945af2)
+   Compiling float-ord v0.3.2
+   Compiling normpath v1.5.2
+   Compiling base62 v2.2.6
+   Compiling rust-i18n v4.2.4
+   Compiling rust-embed-impl v8.14.0
+   Compiling accesskit_consumer v0.38.0
+   Compiling rust-i18n-support v4.2.4
+   Compiling async-process v2.5.0
+   Compiling fancy-regex v0.16.2
+   Compiling gpui-pre-apple v0.3.12
+   Compiling objc2-app-kit v0.2.2
+   Compiling async-fs v2.2.0
+   Compiling async-net v2.0.0
+   Compiling xml5ever v0.18.1
+   Compiling async-executor v1.14.1
+   Compiling bincode v1.3.3
+   Compiling serde_repr v0.1.21
+   Compiling fluent-uri v0.1.4
+   Compiling objc2-security v0.3.2
+   Compiling str_indices v0.4.4
+   Compiling glob v0.3.4
+   Compiling jiff-core v1.0.1
+   Compiling linktime-proc-macro v0.2.3
+   Compiling link-section v0.19.4
+   Compiling unicode-id v0.3.7
+   Compiling mach2 v0.6.0
+   Compiling paste v1.0.15
+   Compiling fnv v1.0.7
+   Compiling markdown v1.0.0
+   Compiling syntect v5.3.0
+   Compiling rust-i18n-macro v4.2.4
+   Compiling lsp-types v0.97.0
+   Compiling ctor v1.0.14
+   Compiling ropey v2.0.0-beta.1
+   Compiling jiff v1.0.2
+   Compiling markup5ever_rcdom v0.3.0
+   Compiling accesskit_macos v0.26.3
+   Compiling smol v2.0.2
+   Compiling rust-embed v8.14.0
+   Compiling objc2-user-notifications v0.3.2
+   Compiling enum-iterator-derive v1.5.0
+   Compiling itertools v0.13.0
+   Compiling objc2-core-services v0.3.2
+   Compiling notify-types v2.3.1
+   Compiling instant v0.1.13
+   Compiling unicode-linebreak v0.1.5
+   Compiling sys-locale v0.3.2
+   Compiling gpui-component v0.10.0 (https://github.com/longbridge/gpui-component?rev=cf945af2d6491ff9bc175f3f1656a14793987db2#cf945af2)
+   Compiling uitcore-sys v0.1.0 (/private/tmp/scratch/uitree/renderer/gpui/crates/uitcore-sys)
+   Compiling enum-iterator v2.3.0
+   Compiling notify v8.2.2
+   Compiling two-face v0.4.5
+   Compiling similar v2.7.0
+   Compiling gpui-component-macros v0.10.0 (https://github.com/longbridge/gpui-component?rev=cf945af2d6491ff9bc175f3f1656a14793987db2#cf945af2)
+   Compiling host v0.1.0 (/private/tmp/scratch/uitree/renderer/gpui/crates/host)
+   Compiling gpui-pre-macos v0.3.12
+   Compiling gpui-base v0.10.0 (https://github.com/longbridge/gpui-component?rev=cf945af2d6491ff9bc175f3f1656a14793987db2#cf945af2)
+   Compiling gpui-pre-platform v0.3.12
+   Compiling gpui-kit v0.10.0 (https://github.com/longbridge/gpui-component?rev=cf945af2d6491ff9bc175f3f1656a14793987db2#cf945af2)
+   Compiling uitcore v0.1.0 (/private/tmp/scratch/uitree/renderer/gpui/crates/uitcore)
+   Compiling uitree v0.1.0 (/private/tmp/scratch/uitree/renderer/gpui/crates/uitree)
+    Finished `release` profile [optimized] target(s) in 2m 16s
+ Downloading crates ...
+  Downloaded alloca v0.4.0
+  Downloaded atomic v0.5.3
+  Downloaded bit-vec v0.10.2
+  Downloaded anes v0.1.6
+  Downloaded cast v0.3.0
+  Downloaded ciborium-io v0.2.2
+  Downloaded ciborium-ll v0.2.2
+  Downloaded convert_case v0.11.0
+  Downloaded ciborium v0.2.2
+  Downloaded bit-set v0.11.1
+  Downloaded wait-timeout v0.2.1
+  Downloaded rand_xorshift v0.5.0
+  Downloaded unarray v0.1.4
+  Downloaded plotters-backend v0.3.7
+  Downloaded plotters-svg v0.3.7
+  Downloaded thiserror-impl v1.0.69
+  Downloaded borsh v1.8.1
+  Downloaded page_size v0.6.0
+  Downloaded pollster v0.2.5
+  Downloaded thiserror v1.0.69
+  Downloaded gpui-pre-bench-metrics v0.3.12
+  Downloaded proptest-macro v0.6.0
+  Downloaded crossbeam-queue v0.3.14
+  Downloaded fixedbitset v0.5.9
+  Downloaded rusty-fork v0.3.1
+  Downloaded clap_lex v1.1.2
+  Downloaded criterion-plot v0.8.2
+  Downloaded tinytemplate v1.2.1
+  Downloaded static_assertions v1.1.0
+  Downloaded borsh-derive v1.8.1
+  Downloaded clap v4.6.9
+  Downloaded core_detect v1.0.0
+  Downloaded gpui-fast-platform v0.1.17
+  Downloaded futures-concurrency v7.7.1
+  Downloaded rand v0.10.4
+  Downloaded criterion v0.8.2
+  Downloaded gpui-fast-macos v0.1.17
+  Downloaded plotters v0.3.7
+  Downloaded proptest v1.12.0
+  Downloaded oorandom v11.1.5
+  Downloaded postage v0.5.0
+  Downloaded gpui-fast-apple v0.1.17
+   Compiling num-traits v0.2.19
+   Compiling arrayvec v0.7.8
+   Compiling rustix v1.1.6
+   Compiling rand_core v0.10.1
+   Compiling getrandom v0.4.3
+   Compiling equator-macro v0.4.2
+   Compiling as-slice v0.2.1
+   Compiling built v0.8.1
+   Compiling av-scenechange v0.14.1
+   Compiling arg_enum_proc_macro v0.3.4
+   Compiling no_std_io2 v0.9.4
+   Compiling nom v8.0.0
+   Compiling pastey v0.1.1
+   Compiling y4m v0.8.0
+   Compiling aligned v0.4.3
+   Compiling bitstream-io v4.10.0
+   Compiling maybe-rayon v0.1.1
+   Compiling polycool v0.4.0
+   Compiling num-derive v0.4.2
+   Compiling simd_helpers v0.1.0
+   Compiling noop_proc_macro v0.3.0
+   Compiling rav1e v0.8.1
+   Compiling kurbo v0.13.1
+   Compiling imgref v1.12.3
+   Compiling equator v0.4.2
+   Compiling thiserror v1.0.69
+   Compiling avif-serialize v0.8.9
+   Compiling convert_case v0.11.0
+   Compiling loop9 v0.1.5
+   Compiling thiserror-impl v1.0.69
+   Compiling wait-timeout v0.2.1
+   Compiling bit-vec v0.10.2
+   Compiling uuid v1.29.3
+   Compiling quick-error v1.2.3
+   Compiling bit-set v0.11.1
+   Compiling rand v0.10.4
+   Compiling proptest-macro v0.6.0
+   Compiling accesskit v0.24.1
+   Compiling tiny-skia v0.11.4
+   Compiling svgtypes v0.16.2
+   Compiling gpui-pre v0.3.12
+   Compiling aligned-vec v0.6.4
+   Compiling rand_xorshift v0.5.0
+   Compiling chacha20 v0.10.2
+   Compiling num-integer v0.1.47
+   Compiling euclid v0.22.14
+   Compiling v_frame v0.3.9
+   Compiling usvg v0.46.0
+   Compiling moxcms v0.8.1
+   Compiling chrono v0.4.45
+   Compiling num-bigint v0.4.8
+   Compiling crossbeam-queue v0.3.14
+   Compiling core_detect v1.0.0
+   Compiling pollster v0.2.5
+   Compiling unarray v0.1.4
+   Compiling atomic v0.5.3
+   Compiling fixedbitset v0.5.9
+   Compiling lyon_geom v1.0.20
+   Compiling static_assertions v1.1.0
+   Compiling etagere v0.2.15
+   Compiling postage v0.5.0
+   Compiling gpui-pre-collections v0.3.12
+   Compiling futures-concurrency v7.7.1
+   Compiling lyon_path v1.0.19
+   Compiling gpui-pre-http-client v0.3.12
+   Compiling gpui-pre-apple v0.3.12
+   Compiling accesskit_consumer v0.38.0
+   Compiling tempfile v3.27.0
+   Compiling num-rational v0.4.2
+   Compiling rusty-fork v0.3.1
+   Compiling av1-grain v0.2.5
+   Compiling lyon_algorithms v1.0.22
+   Compiling lyon_tessellation v1.0.23
+   Compiling resvg v0.46.0
+   Compiling lyon v1.0.19
+   Compiling proptest v1.12.0
+   Compiling gpui-pre-scheduler v0.3.12
+   Compiling polling v3.11.0
+   Compiling async-io v2.6.0
+   Compiling async-signal v0.2.14
+   Compiling async-net v2.0.0
+   Compiling accesskit_macos v0.26.3
+   Compiling async-process v2.5.0
+   Compiling gpui-component v0.10.0 (https://github.com/longbridge/gpui-component?rev=cf945af2d6491ff9bc175f3f1656a14793987db2#cf945af2)
+   Compiling smol v2.0.2
+   Compiling uitcore v0.1.0 (/private/tmp/scratch/uitree/renderer/gpui/crates/uitcore)
+   Compiling ravif v0.13.0
+   Compiling image v0.25.10
+   Compiling gpui-kit-assets v0.10.0 (https://github.com/longbridge/gpui-component?rev=cf945af2d6491ff9bc175f3f1656a14793987db2#cf945af2)
+   Compiling gpui-base v0.10.0 (https://github.com/longbridge/gpui-component?rev=cf945af2d6491ff9bc175f3f1656a14793987db2#cf945af2)
+   Compiling gpui-pre-macos v0.3.12
+   Compiling gpui-pre-platform v0.3.12
+   Compiling gpui-kit v0.10.0 (https://github.com/longbridge/gpui-component?rev=cf945af2d6491ff9bc175f3f1656a14793987db2#cf945af2)
+   Compiling host v0.1.0 (/private/tmp/scratch/uitree/renderer/gpui/crates/host)
+    Finished `release` profile [optimized] target(s) in 45.94s
+== 1. native GPUI
+clickbench: native GPUI, 200 clicks, ms from the click handler
+  state  (new text in the renderer's hands)  p50   0.026  p90   0.034  max   0.054
+  render (window render starts)             p50   4.710  p90   8.354  max   8.472
+  frame  (next frame begins: previous shown) p50  15.259  p90  37.940  max  41.795
+== 2. built-in renderer, Go app on the host (9P over a unix socket)
+clickbench: built-in renderer, 200 clicks, ms from the click handler
+  state  (new text in the renderer's hands)  p50   0.508  p90   0.667  max   1.972
+  render (window render starts)             p50   5.271  p90   8.460  max   9.982
+  frame  (next frame begins: previous shown) p50  38.435  p90  41.687  max  43.242
+== 3. built-in renderer, Go app in h9 (GOOS=plan9 GOARCH=amd64)
+clickbench: built-in renderer, 200 clicks, ms from the click handler
+  state  (new text in the renderer's hands)  p50   1.289  p90   1.899  max   3.879
+  render (window render starts)             p50   6.163  p90   8.483  max  10.893
+  frame  (next frame begins: previous shown) p50  39.446  p90  41.711  max  45.844
+== 4. built-in renderer, counter.rc in h9
+uitree: rc: file does not exist
+== 5. 9P renderer (Python), Go app on the host
+render: uitree-render 0.1
+tree:                6 nodes
+clicks:              200
+round trip:          p50 0.711 ms  p90 0.932 ms  max 5.329 ms
+input write (9P):    p50 0.373 ms  p90 0.518 ms  max 5.049 ms
+encode -> applied:   p50 -335050177.732 ms  p90 -335050177.652 ms  max -335050176.910 ms
+final: 200
+pumps 810
+batches 201
+bytes 13035
+snapshots 1 last_bytes=3903 last_us=40
+pump_us n=201 p50=31.0 p90=46.0 max=252.0
+encode_us n=201 p50=3.0 p90=5.0 max=103.0
+== 6. 9P renderer (Python), Go app in h9
+render: uitree-render 0.1
+tree:                6 nodes
+clicks:              200
+round trip:          p50 1.196 ms  p90 1.589 ms  max 10.113 ms
+input write (9P):    p50 0.392 ms  p90 0.548 ms  max 2.958 ms
+encode -> applied:   p50 -335050177.734 ms  p90 -335050177.659 ms  max -335050177.452 ms
+final: 200
+pumps 810
+batches 201
+bytes 13035
+snapshots 1 last_bytes=3903 last_us=30
+pump_us n=201 p50=32.0 p90=45.0 max=162.0
+encode_us n=201 p50=3.0 p90=4.0 max=11.0
+== 7. 9P renderer (Python), counter.rc in h9
+render: uitree-render 0.1
+render: end of changes
+tree:                0 nodes
+Traceback (most recent call last):
+  File "/tmp/scratch/uitree/renderer/toy-py/render.py", line 471, in <module>
+    main()
+    ~~~~^^
+  File "/tmp/scratch/uitree/renderer/toy-py/render.py", line 437, in main
+    p.write(inp, 0, b"event click win=main node=inc\n")
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/scratch/uitree/renderer/toy-py/render.py", line 123, in write
+    self.rpc(T["write"], struct.pack("<IQI", f, off + i, len(piece)) + piece)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/scratch/uitree/renderer/toy-py/render.py", line 94, in rpc
+    self.sk.sendall(msg)
+    ~~~~~~~~~~~~~~~^^^^^
+BrokenPipeError: [Errno 32] Broken pipe
+
+== notes and reruns
+# The full run above had no $H9ROOT and h9's built-in root here was the skeleton
+# only (no slim root built), so there was no rc: row 4 failed with "rc: file does
+# not exist" and row 7 got 0 nodes, then BrokenPipe. Rows 3 and 6 (static Go
+# binary) don't need rc and ran fine.
+# Then built a 9front 11952 root in the hyper9 submodule (scripts/fetch.sh image;
+# zig build mkroot) and reran with
+# H9ROOT=uitree/third_party/hyper9/.local/9front/root ONLY='...':
+#  - row 7 ran (below).
+#  - row 4 still fails: rc starts, but every click logs "clickbench: click N
+#    timed out", and with 200 clicks it was still running after 10 min. Killed.
+#    Rows 3 and 7 show that h9, rc and counter.rc each work, so the problem looks
+#    specific to the built-in renderer + rc combination. Not investigated further.
+# Rows 5-7 "encode -> applied" is about -335050177 ms on every row: a clock-base
+# mismatch between the toy renderer and uitree-remote, not a real number.
+== 7. 9P renderer (Python), counter.rc in h9
+tree:                6 nodes
+clicks:              200
+round trip:          p50 6.159 ms  p90 8.499 ms  max 19.467 ms
+input write (9P):    p50 0.502 ms  p90 0.772 ms  max 1.603 ms
+encode -> applied:   p50 -335050176.442 ms  p90 -335050176.311 ms  max -335050174.637 ms
+final: 200
+pumps 812
+batches 203
+bytes 13116
+snapshots 1 last_bytes=3903 last_us=27
+pump_us n=203 p50=41.0 p90=52.0 max=532.0
+encode_us n=203 p50=4.0 p90=5.0 max=90.0
+
+== ONLY='1 2 3 4 4m' ./run.sh 50, at 7e13206 (window brought to the front), H9ROOT=uitree/third_party/hyper9/.local/9front/root
+# Row 4 runs now, and 4m matches it, so the keys and menu writes aren't the stall.
+# The trailing 'exit 1' is run.sh's status before 86de1e2 fixed it.
+== build
+warning: built-in root: no slim-11952-arm64 in /private/tmp/scratch/uitree/third_party/hyper9/.local/9front, so arm64 gets the skeleton only; zig build slim -Darch=arm64 makes it
+warning: built-in root: no slim-11952-amd64 in /private/tmp/scratch/uitree/third_party/hyper9/.local/9front, so amd64 gets the skeleton only; zig build slim -Darch=amd64 makes it
+warning: built-in root: no slim-11952-386 in /private/tmp/scratch/uitree/third_party/hyper9/.local/9front, so 386 gets the skeleton only; zig build slim -Darch=386 makes it
+/private/tmp/scratch/uitree/core/zig-out/bin/uitree-headless: replacing existing signature
+warning: built-in root: no slim-11952-arm64 in /private/tmp/scratch/uitree/third_party/hyper9/.local/9front, so arm64 gets the skeleton only; zig build slim -Darch=arm64 makes it
+warning: built-in root: no slim-11952-amd64 in /private/tmp/scratch/uitree/third_party/hyper9/.local/9front, so amd64 gets the skeleton only; zig build slim -Darch=amd64 makes it
+warning: built-in root: no slim-11952-386 in /private/tmp/scratch/uitree/third_party/hyper9/.local/9front, so 386 gets the skeleton only; zig build slim -Darch=386 makes it
+/private/tmp/scratch/uitree/core/zig-out/bin/uitree-remote: replacing existing signature
+   Compiling uitcore-sys v0.1.0 (/private/tmp/scratch/uitree/renderer/gpui/crates/uitcore-sys)
+   Compiling uitcore v0.1.0 (/private/tmp/scratch/uitree/renderer/gpui/crates/uitcore)
+   Compiling host v0.1.0 (/private/tmp/scratch/uitree/renderer/gpui/crates/host)
+   Compiling uitree v0.1.0 (/private/tmp/scratch/uitree/renderer/gpui/crates/uitree)
+    Finished `release` profile [optimized] target(s) in 1m 35s
+   Compiling uitcore v0.1.0 (/private/tmp/scratch/uitree/renderer/gpui/crates/uitcore)
+   Compiling host v0.1.0 (/private/tmp/scratch/uitree/renderer/gpui/crates/host)
+    Finished `release` profile [optimized] target(s) in 11.52s
+== 1. native GPUI
+clickbench: native GPUI, 50 clicks, ms from the click handler
+  state  (new text in the renderer's hands)  p50   0.036  p90   0.050  max   0.105
+  render (window render starts)             p50   4.393  p90   7.978  max   8.436
+  frame  (next frame begins: previous shown) p50  14.235  p90  16.382  max  16.721
+== 2. built-in renderer, Go app on the host (9P over a unix socket)
+clickbench: built-in renderer, 50 clicks, ms from the click handler
+  state  (new text in the renderer's hands)  p50   0.415  p90   0.689  max   1.073
+  render (window render starts)             p50   7.790  p90   8.201  max   8.593
+  frame  (next frame begins: previous shown) p50  16.092  p90  16.270  max  16.668
+== 3. built-in renderer, Go app in h9 (GOOS=plan9 GOARCH=amd64)
+clickbench: built-in renderer, 50 clicks, ms from the click handler
+  state  (new text in the renderer's hands)  p50   1.213  p90   1.963  max   4.244
+  render (window render starts)             p50   7.837  p90   8.468  max  10.957
+  frame  (next frame begins: previous shown) p50  16.024  p90  16.646  max  19.203
+== 4. built-in renderer, counter.rc in h9
+clickbench: built-in renderer, 50 clicks, ms from the click handler
+  state  (new text in the renderer's hands)  p50  31.669  p90  34.338  max  36.756
+  render (window render starts)             p50  33.547  p90  41.140  max  41.711
+  frame  (next frame begins: previous shown) p50  41.660  p90  49.456  max  58.163
+== 4m. row 4, counter.rc without keys and menu
+clickbench: built-in renderer, 50 clicks, ms from the click handler
+  state  (new text in the renderer's hands)  p50  31.741  p90  34.164  max  39.392
+  render (window render starts)             p50  33.422  p90  39.432  max  45.366
+  frame  (next frame begins: previous shown) p50  43.777  p90  49.414  max  54.100
+exit 1
+
+== ONLY='4 4a 7 7a' ./run.sh 50, at 04b0526, H9ROOT=uitree/third_party/hyper9/.local/9front/root
+# Without awk, row 4 state p50 drops 31.2 -> 6.9 ms and row 7 round trip 7.8 -> 3.7 ms.
+# The trailing 'exit 1' is the EXIT trap's pkill under set -e, fixed in the next commit.
+== build
+warning: built-in root: no slim-11952-arm64 in /private/tmp/scratch/uitree/third_party/hyper9/.local/9front, so arm64 gets the skeleton only; zig build slim -Darch=arm64 makes it
+warning: built-in root: no slim-11952-amd64 in /private/tmp/scratch/uitree/third_party/hyper9/.local/9front, so amd64 gets the skeleton only; zig build slim -Darch=amd64 makes it
+warning: built-in root: no slim-11952-386 in /private/tmp/scratch/uitree/third_party/hyper9/.local/9front, so 386 gets the skeleton only; zig build slim -Darch=386 makes it
+/private/tmp/scratch/uitree/core/zig-out/bin/uitree-headless: replacing existing signature
+warning: built-in root: no slim-11952-arm64 in /private/tmp/scratch/uitree/third_party/hyper9/.local/9front, so arm64 gets the skeleton only; zig build slim -Darch=arm64 makes it
+warning: built-in root: no slim-11952-amd64 in /private/tmp/scratch/uitree/third_party/hyper9/.local/9front, so amd64 gets the skeleton only; zig build slim -Darch=amd64 makes it
+warning: built-in root: no slim-11952-386 in /private/tmp/scratch/uitree/third_party/hyper9/.local/9front, so 386 gets the skeleton only; zig build slim -Darch=386 makes it
+/private/tmp/scratch/uitree/core/zig-out/bin/uitree-remote: replacing existing signature
+   Compiling host v0.1.0 (/private/tmp/scratch/uitree/renderer/gpui/crates/host)
+   Compiling uitree v0.1.0 (/private/tmp/scratch/uitree/renderer/gpui/crates/uitree)
+    Finished `release` profile [optimized] target(s) in 10.78s
+   Compiling host v0.1.0 (/private/tmp/scratch/uitree/renderer/gpui/crates/host)
+    Finished `release` profile [optimized] target(s) in 11.45s
+== 4. built-in renderer, counter.rc in h9
+clickbench: built-in renderer, 50 clicks, ms from the click handler
+  state  (new text in the renderer's hands)  p50  31.232  p90  33.601  max  35.808
+  render (window render starts)             p50  33.305  p90  41.019  max  44.352
+  frame  (next frame begins: previous shown) p50  41.545  p90  49.334  max  52.563
+== 4a. row 4, counter.rc without awk
+clickbench: built-in renderer, 50 clicks, ms from the click handler
+  state  (new text in the renderer's hands)  p50   6.893  p90   8.579  max  11.483
+  render (window render starts)             p50   9.690  p90  16.140  max  16.720
+  frame  (next frame begins: previous shown) p50  17.990  p90  24.398  max  24.620
+== 7. 9P renderer (Python), counter.rc in h9
+render: uitree-render 0.1
+tree:                6 nodes
+clicks:              50
+round trip:          p50 7.835 ms  p90 9.694 ms  max 15.030 ms
+input write (9P):    p50 0.612 ms  p90 0.900 ms  max 1.649 ms
+encode -> applied:   p50 0.272 ms  p90 0.444 ms  max 0.517 ms
+final: 50
+pumps 212
+batches 53
+bytes 3715
+snapshots 1 last_bytes=3903 last_us=49
+pump_us n=53 p50=49.0 p90=63.0 max=276.0
+encode_us n=53 p50=5.0 p90=6.0 max=76.0
+== 7a. row 7, counter.rc without awk
+render: uitree-render 0.1
+tree:                6 nodes
+clicks:              50
+round trip:          p50 3.721 ms  p90 4.746 ms  max 8.025 ms
+input write (9P):    p50 0.564 ms  p90 0.764 ms  max 1.209 ms
+encode -> applied:   p50 0.250 ms  p90 0.339 ms  max 0.416 ms
+final: b
+pumps 212
+batches 53
+bytes 3674
+snapshots 1 last_bytes=3903 last_us=27
+pump_us n=53 p50=45.0 p90=63.0 max=102.0
+encode_us n=53 p50=4.0 p90=5.0 max=16.0
+exit 1
