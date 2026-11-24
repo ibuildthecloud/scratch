@@ -324,10 +324,11 @@ With a compiled app, uitree, 9P and h9 together cost under a frame over
 native GPUI, and a 9P renderer adds about 0.3 ms to the state point on
 top of the C ABI. The rc rows are an open question: the same
 `counter.rc` takes 6.2 ms behind the 9P renderer but 31.7 ms behind the
-built-in one (on Linux, 12 ms and 22 ms), while the Go app costs the same
-behind either. Something in the built-in renderer's process slows rc's
-several process starts and 9P round trips per click, and the compiled
-rows don't see it.
+built-in one on the Mac, while the Go app costs the same behind either.
+On Linux, run back to back on one machine, the two agree (29 ms each,
+21 ms of it the `awk` that `add` starts per click; 8 ms without it), so
+the gap is macOS-specific. Rows 4a and 7a in the bench (rc without awk)
+tell whether it is in h9's process starts there.
 
 What would hurt is a big rewrite on a slow renderer: a 15,000-node
 snapshot is 744 KB, and parsing is the renderer's cost, not the wire's.

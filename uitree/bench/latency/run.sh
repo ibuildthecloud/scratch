@@ -40,6 +40,13 @@ if [ -n "$ONLY" ] && want 4m; then echo "== 4m. row 4, counter.rc without keys a
 	sed '/^echo .=  *inc/,/menu\/Counter$/d' counter.rc >counter-nomenu.rc
 	UITREE_CLICK_BENCH=$N "$gpui" rc counter-nomenu.rc; fi
 
+# 4a and 7a: rows 4 and 7 with a counter.rc that runs no awk (the label
+# toggles a/b instead of counting), to split rc's process starts from its
+# 9P traffic. Only when named: ONLY='4a 7a'.
+sed 's/n=`{add \$n 1}/if(~ $n a) n=b; if not n=a/' counter.rc >counter-noawk.rc
+if [ -n "$ONLY" ] && want 4a; then echo "== 4a. row 4, counter.rc without awk"
+	UITREE_CLICK_BENCH=$N "$gpui" rc counter-noawk.rc; fi
+
 # The 9P renderer rows: uitree-remote serves the renderer tree, the Python
 # toy renderer clicks and times click -> new text applied (no frame).
 pids=
@@ -59,3 +66,5 @@ if want 6; then echo "== 6. 9P renderer (Python), Go app in h9"
 	nine ./counter-go; python3 -u "$toy" "unix!$tmp/r.sock" --bench "$N"; stop; fi
 if want 7; then echo "== 7. 9P renderer (Python), counter.rc in h9"
 	nine rc counter.rc; python3 -u "$toy" "unix!$tmp/r.sock" --bench "$N"; stop; fi
+if [ -n "$ONLY" ] && want 7a; then echo "== 7a. row 7, counter.rc without awk"
+	nine rc counter-noawk.rc; python3 -u "$toy" "unix!$tmp/r.sock" --bench "$N"; stop; fi
