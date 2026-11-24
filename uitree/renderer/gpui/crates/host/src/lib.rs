@@ -88,6 +88,9 @@ pub struct Options {
     pub argv: Vec<String>,
     /// Build an N-node tree and measure, instead of running an app.
     pub bench: Option<usize>,
+    /// `-a ADDR`: also serve $ui on ADDR (`unix!PATH`, `tcp!HOST!PORT`),
+    /// for clients outside the app's machine, as uitree-headless -a does.
+    pub listen: Option<String>,
 }
 
 /// Every component the host knows: the element tier, each group, and canvas.

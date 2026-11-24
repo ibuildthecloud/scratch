@@ -329,8 +329,14 @@ impl Core {
 
     /// Listens on a fresh private unix socket; returns its dial string.
     pub fn listen(&mut self) -> Result<String, Error> {
+        self.listen_on("")
+    }
+
+    /// Listens on `addr` (`unix!PATH`, `tcp!HOST!PORT`; empty for a fresh
+    /// private unix socket) and returns the dial string actually used.
+    pub fn listen_on(&mut self, addr: &str) -> Result<String, Error> {
         let mut d = UitStr::EMPTY;
-        self.check(unsafe { sys::uit_listen(self.raw, UitStr::EMPTY, &mut d) })?;
+        self.check(unsafe { sys::uit_listen(self.raw, s(addr), &mut d) })?;
         Ok(text(d).into_owned())
     }
 

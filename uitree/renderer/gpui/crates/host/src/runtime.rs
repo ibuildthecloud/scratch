@@ -554,6 +554,19 @@ pub fn run(opts: Options) -> i32 {
             }
             return;
         }
+        // -a: serve $ui to clients outside the machine too, before the app
+        // starts, so the address is there as soon as it's printed.
+        if let Some(addr) = opts.listen.as_deref() {
+            match inner.core.borrow_mut().listen_on(addr) {
+                Ok(dial) => eprintln!("uitree: listening on {dial}"),
+                Err(e) => {
+                    eprintln!("uitree: listen {addr}: {e}");
+                    EXIT.store(1, Ordering::SeqCst);
+                    cx.quit();
+                    return;
+                }
+            }
+        }
         let argv: Vec<&str> = opts.argv.iter().map(String::as_str).collect();
         let r = inner.core.borrow_mut().run_machine(&uitcore::MachineArgs {
             prog: argv[0],

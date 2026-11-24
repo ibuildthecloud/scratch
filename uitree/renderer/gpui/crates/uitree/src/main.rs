@@ -2,13 +2,16 @@
 //! (libuitcore, Zig); this only parses its flags and
 //! hands control to GPUI.
 //!
-//!     uitree [-k] [-t title] [--root DIR] [--bench N] prog [args...]
+//!     uitree [-k] [-t title] [-a ADDR] [--root DIR] [--bench N] prog [args...]
 //!
 //! The app runs in h9 with $ui mounted at /mnt/ui. `--root` is h9's
 //! (default $H9ROOT, else the built-in root). `--bench N` builds an
 //! N-node tree instead of running an app, measures the per-frame cost of
 //! reading it through the ABI, prints it and exits. `-k` keeps the
-//! window open after the program exits.
+//! window open after the program exits. `-a ADDR` also serves $ui on
+//! ADDR (`unix!PATH`, `tcp!HOST!PORT`) for clients outside the app's
+//! machine, and prints `uitree: listening on DIAL` to standard error, as
+//! uitree-headless -a does.
 
 fn main() {
     let mut args = std::env::args().skip(1);
@@ -18,10 +21,11 @@ fn main() {
         match a.as_str() {
             "-t" => opts.title = args.next(),
             "-k" => opts.keep = true,
+            "-a" => opts.listen = args.next(),
             "--root" => opts.root = args.next(),
             "--bench" => opts.bench = args.next().and_then(|n| n.parse().ok()),
             "-h" | "--help" => {
-                eprintln!("usage: uitree [-k] [-t title] [--root DIR] [--bench N] prog [args...]");
+                eprintln!("usage: uitree [-k] [-t title] [-a ADDR] [--root DIR] [--bench N] prog [args...]");
                 std::process::exit(2);
             }
             _ => {
@@ -31,7 +35,7 @@ fn main() {
         }
     }
     if rest.is_empty() && opts.bench.is_none() && std::env::var_os("UITREE_HOST_APP").is_none() {
-        eprintln!("usage: uitree [-k] [-t title] [--root DIR] [--bench N] prog [args...]");
+        eprintln!("usage: uitree [-k] [-t title] [-a ADDR] [--root DIR] [--bench N] prog [args...]");
         std::process::exit(2);
     }
     opts.root = opts.root.or_else(|| std::env::var("H9ROOT").ok().filter(|r| !r.is_empty()));
