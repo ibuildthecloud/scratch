@@ -322,9 +322,12 @@ click handler: **state** is the new text in the renderer's hands,
 
 With a compiled app, uitree, 9P and h9 together cost under a frame over
 native GPUI, and a 9P renderer adds about 0.3 ms to the state point on
-top of the C ABI. The rc rows are dominated by rc (it runs `awk` for
-each click); row 4 vs row 7 also differ in timing method, so compare the
-compiled rows across renderers.
+top of the C ABI. The rc rows are an open question: the same
+`counter.rc` takes 6.2 ms behind the 9P renderer but 31.7 ms behind the
+built-in one (on Linux, 12 ms and 22 ms), while the Go app costs the same
+behind either. Something in the built-in renderer's process slows rc's
+several process starts and 9P round trips per click, and the compiled
+rows don't see it.
 
 What would hurt is a big rewrite on a slow renderer: a 15,000-node
 snapshot is 744 KB, and parsing is the renderer's cost, not the wire's.
