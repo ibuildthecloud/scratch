@@ -83,6 +83,15 @@ pub(crate) fn start(host: &Rc<Host>, n: usize, cx: &mut App) {
             }
             cx.background_executor().timer(Duration::from_millis(50)).await;
         };
+        // In front, as the native counter puts itself: macOS throttles
+        // frames for a window that is behind others.
+        let _ = cx.update(|cx| {
+            cx.activate(true);
+            let handle = h.windows.borrow().get("main").map(|w| w.handle);
+            if let Some(handle) = handle {
+                let _ = handle.update(cx, |_, window, _| window.activate_window());
+            }
+        });
         // Let the first frames settle.
         cx.background_executor().timer(Duration::from_millis(1000)).await;
         for i in 0..n {
@@ -104,7 +113,15 @@ pub(crate) fn start(host: &Rc<Host>, n: usize, cx: &mut App) {
             let mut c = h.clicks.borrow_mut();
             match c.probe.take() {
                 Some(Probe { t0, state: Some(s), render: Some(r), frame: Some(f), .. }) => c.done.push([s - t0, r - t0, f - t0]),
-                _ => eprintln!("clickbench: click {i} timed out"),
+                // Which points it reached, to tell a stuck app (no state)
+                // from a window that doesn't draw (no render or frame).
+                Some(p) => eprintln!(
+                    "clickbench: click {i} timed out: state {} render {} frame {}",
+                    p.state.is_some(),
+                    p.render.is_some(),
+                    p.frame.is_some()
+                ),
+                None => eprintln!("clickbench: click {i} lost its probe"),
             }
             drop(c);
             // Off the frame grid, so clicks land at different vsync phases.

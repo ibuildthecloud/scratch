@@ -18,6 +18,13 @@ The standard library only: a 9P2000 client is about eighty lines.
 
 import socket, struct, sys, threading, time
 
+
+def mono():
+    # CLOCK_MONOTONIC, as the core stamps batches with (x.t=). On macOS
+    # time.monotonic_ns is another clock, which made encode -> applied
+    # read as -335 million ms.
+    return time.clock_gettime_ns(time.CLOCK_MONOTONIC)
+
 # ---------------------------------------------------------------- 9P2000
 
 NOFID = 0xFFFFFFFF
@@ -334,7 +341,7 @@ def main():
     print("render:", p.cat("version").strip(), file=sys.stderr)
     p.put("hello", "hello name=%s role=%s" % (name, role))
     inp = p.open("input", 1)
-    t_open = time.monotonic_ns()
+    t_open = mono()
     ch = p.open("changes", 0)
 
     tree, st = Tree(), Stream()
@@ -365,7 +372,7 @@ def main():
             if not b:
                 print("render: end of changes", file=sys.stderr)
                 with batch_cv:
-                    seen.append((None, "eof", 0, time.monotonic_ns(), []))
+                    seen.append((None, "eof", 0, mono(), []))
                     batch_cv.notify_all()
                 return
             off += len(b)
@@ -384,7 +391,7 @@ def main():
                         laid.clear()
                     for x in body:
                         tree.apply(x)
-                    t_app = time.monotonic_ns()
+                    t_app = mono()
                     out = []
                     if role == "primary":
                         for win in tree.windows:
@@ -433,9 +440,9 @@ def main():
     for i in range(bench):
         with batch_cv:
             start = len(seen)
-        t0 = time.monotonic_ns()
+        t0 = mono()
         p.write(inp, 0, b"event click win=main node=inc\n")
-        t_in = time.monotonic_ns()
+        t_in = mono()
 
         def has_text():
             for s in seen[start:]:

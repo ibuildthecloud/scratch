@@ -33,6 +33,12 @@ if want 3; then echo "== 3. built-in renderer, Go app in h9 (GOOS=plan9 GOARCH=a
 	UITREE_CLICK_BENCH=$N "$gpui" ./counter-go; fi
 if want 4; then echo "== 4. built-in renderer, counter.rc in h9"
 	UITREE_CLICK_BENCH=$N "$gpui" rc counter.rc; fi
+# 4m: row 4 without counter.rc's keys and menu writes, which only the
+# built-in renderer acts on (a platform menu bar). Not in the default run:
+# ONLY=4m, to tell whether those are what stalls row 4 on macOS.
+if [ -n "$ONLY" ] && want 4m; then echo "== 4m. row 4, counter.rc without keys and menu"
+	sed '/^echo .=  *inc/,/menu\/Counter$/d' counter.rc >counter-nomenu.rc
+	UITREE_CLICK_BENCH=$N "$gpui" rc counter-nomenu.rc; fi
 
 # The 9P renderer rows: uitree-remote serves the renderer tree, the Python
 # toy renderer clicks and times click -> new text applied (no frame).
