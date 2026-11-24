@@ -1,0 +1,38 @@
+@box 58 o
+{o|✻} Welcome to {b|Claude Code}!
+
+  {d|/help for help, /status for your current setup}
+
+  {d|cwd: ~/src/uitree/renderer/gpui}
+@end
+
+{user|> the resize test in crates/host is flaky on CI, can you find out why? }
+
+{w|●} I'll look at the test and what it waits on.
+
+{g|●} {b|Read}(crates/host/src/testing.rs)
+  {d|⎿  Read 412 lines}
+
+{g|●} {b|Search}(pattern: "fn resize", path: "crates/host/src")
+  {d|⎿  Found 3 files}
+
+{w|●} The test resizes the window and then reads {c|bounds} on the very next
+  turn, but the core only learns the new size after GPUI's next layout.
+  On a slow runner that frame hasn't happened yet.
+
+{g|●} {b|Update}(crates/host/src/testing.rs)
+  {d|⎿  Updated crates/host/src/testing.rs with 2 additions and 1 removal}
+      {d|218}  {del|-        h.resize(400, 300);                              }
+      {d|218}  {add|+        h.resize(400, 300);                              }
+      {d|219}  {add|+        h.wait_for_layout();                             }
+      {d|220}       let b = h.read("win/main/bounds");
+
+{g|●} {b|Bash}(cargo test -p host resize -- --test-threads=1)
+  {o|⎿  Running…}
+
+{o|✻ Simmering…} {d|(38s · ↓ 2.4k tokens · esc to interrupt)}
+
+@box 92 d
+{w|>} 
+@end
+  {d|? for shortcuts}

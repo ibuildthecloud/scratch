@@ -1,0 +1,15 @@
+#!/bin/rc
+# The profile menu (over/usermenu). Clicks on its rows bubble here; the
+# row's tag says which. Verbs (open, close) go to the node's own ctl; the
+# window ctl (this script's stdout) only takes set/new/delete/tree.
+echo close >$win/over/usermenu/ctl
+switch($2) {
+case menu:settings
+	echo open >$win/over/settings/ctl
+case menu:keys
+	echo 'notify ''Keyboard shortcuts: not built yet'''
+case menu:help
+	echo 'notify ''Help: not built yet'''
+case menu:logout
+	echo 'notify ''Logged out (not really)'' type=warning'
+}

@@ -1,0 +1,80 @@
+div root  : h-flex items-stretch size-full bg=background
+  sidebar nav  : flex-shrink-0
+    sidebar-group agentui  label=agentui
+      sidebar-item sidebar  label='Sidebar layout'  icon=circle-check
+    sidebar-group hyper9  label=hyper9
+      sidebar-item kvm  active  label='KVM backend'  icon=circle-dot
+    sidebar-group uitree  label=uitree
+      sidebar-item appdir  label='appdir runner'  icon=circle-alert  badge='needs you'
+      sidebar-item resize-test  label='Fix flaky resize test'  icon=loader-circle
+    sidebar-group web  label=web
+      sidebar-item search  label='Docs search'  icon=loader-circle
+    div header  : h-flex items-center gap=8 px=4
+      icon logo  name=sparkles  : text-color=#d97757
+      text t  text=Agents  : text-sm font-semibold
+    div footer  : v-flex gap=8 p=4 w-full
+      button new  outline  label='New session'  icon=message-square-plus  tag=new  : w-full
+      text sum  text='5 sessions · 2 running · 1 waiting'  : text-xs text-color=muted-foreground px=2
+      div profile  tag=profile  on=click  : h-flex items-center gap=10 px=6 py=6 w-full rounded-md cursor-pointer hover:bg=accent
+        avatar pfp  sm  src=@pfp  name='Darren Shepherd'
+        div who  : v-flex flex-1 min-w=0
+          text name  text='Darren Shepherd'  : text-sm font-medium truncate
+          text plan  text='Max plan'  : text-xs text-color=muted-foreground
+        icon more  name=chevrons-up-down  : text-color=muted-foreground
+  div main  : v-flex flex-1 min-w=0 bg=#1a1a1a
+    div bar  : h-flex items-center gap=10 h=38 px=16 flex-shrink-0 bg=#232323 border-b-1 border-color=#2f2f2f
+      text title  text='KVM backend'  : text-sm font-medium text-color=#e6e6e6
+      text cwd  text=~/src/hyper9  : text-xs text-color=#7f848e
+    scroll term  origin='-0 -0'  : flex-1 overflow-y-scroll overflow-x-scroll px=18 py=14
+      styled-text screen  text=<<END  runs=<<END2  : font-family=Hack text-size=13 line-height=19 text-color=#d4d4d4 whitespace-nowrap
+╭────────────────────────────────────────────────────────────╮
+│ ✻ Welcome to Claude Code!                                  │
+│                                                            │
+│   /help for help, /status for your current setup           │
+│                                                            │
+│   cwd: ~/src/hyper9                                        │
+╰────────────────────────────────────────────────────────────╯
+
+ Tips for getting started:
+
+ 1. Ask Claude to create a new app or clone a repository
+ 2. Use Claude to help with file analysis, editing, bash commands and git
+ 3. Be as specific as you would with another engineer for the best results
+ 4. ✓ Run /init to create a CLAUDE.md file with instructions for Claude
+
+╭──────────────────────────────────────────────────────────────────────────────────────────────╮
+│ > Try "how does the native backend differ from KVM?"                                         │
+╰──────────────────────────────────────────────────────────────────────────────────────────────╯
+  ? for shortcuts
+END
+0 186 text-color=#d97757
+187 3 text-color=#d97757
+191 3 text-color=#d97757
+206 11 font-bold
+252 3 text-color=#d97757
+256 3 text-color=#d97757
+319 3 text-color=#d97757
+323 3 text-color=#d97757
+329 46 text-color=#7f848e
+386 3 text-color=#d97757
+390 3 text-color=#d97757
+453 3 text-color=#d97757
+457 3 text-color=#d97757
+463 17 text-color=#7f848e
+520 3 text-color=#d97757
+524 186 text-color=#d97757
+713 25 text-color=#7f848e
+741 55 text-color=#7f848e
+798 72 text-color=#7f848e
+872 73 text-color=#7f848e
+947 2 text-color=#7f848e
+950 3 text-color=#4eba65
+954 65 text-color=#7f848e
+1021 288 text-color=#7f848e
+1310 3 text-color=#7f848e
+1314 1 text-color=#ffffff
+1316 50 text-color=#7f848e
+1407 3 text-color=#7f848e
+1411 288 text-color=#7f848e
+1702 15 text-color=#7f848e
+END2

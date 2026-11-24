@@ -1,0 +1,19 @@
+@box 58 o
+{o|✻} Welcome to {b|Claude Code}!
+
+  {d|/help for help, /status for your current setup}
+
+  {d|cwd: ~/src/hyper9}
+@end
+
+ {d|Tips for getting started:}
+
+ {d|1. Ask Claude to create a new app or clone a repository}
+ {d|2. Use Claude to help with file analysis, editing, bash commands and git}
+ {d|3. Be as specific as you would with another engineer for the best results}
+ {d|4.} {g|✓} {d|Run /init to create a CLAUDE.md file with instructions for Claude}
+
+@box 92 d
+{w|>} {d|Try "how does the native backend differ from KVM?"}
+@end
+  {d|? for shortcuts}

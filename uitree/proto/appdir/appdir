@@ -1,0 +1,57 @@
+#!/bin/sh
+# appdir DIR: run the app in DIR, and mount its live $ui on the host so
+# you develop it by reading and writing files.
+#
+#	appdir DIR
+#
+# - The window is the GPUI renderer on $DISPLAY.
+# - The runner (runner.rc) and the handlers run inside h9, in Plan 9
+#   (rc, awk, sed, grep). h9 sees only the directory it's started in, so
+#   the runner is copied to DIR/.appdir/runner.rc and uitree is started
+#   from DIR.
+# - uitree -a serves the same $ui on a unix socket, and 9mount (setuid,
+#   no sudo) mounts it at ~/uitree/NAME (or $APPDIR_MNT) while the app
+#   runs. Read and write it with any tool:
+#	cat ~/uitree/NAME/win/main/tree
+#	echo 'set nav : w=300' >~/uitree/NAME/win/main/ctl
+#   The runner saves the window's tree back to DIR/tree within a second
+#   of any change, whoever made it.
+#
+# Needs a 9front root with rc ($H9ROOT, default hyper9's isoroot here),
+# the 9p kernel module and 9mount.
+set -eu
+here=$(cd "$(dirname "$0")" && pwd)
+[ $# -eq 1 ] && [ -d "$1" ] || { echo "usage: appdir DIR" >&2; exit 2; }
+dir=$(cd "$1" && pwd)
+name=$(basename "$dir")
+uitree_bin=${UITREE:-$here/../../renderer/gpui/target/release/uitree}
+export H9ROOT=${H9ROOT:-$here/../../third_party/hyper9/.local/9front/root-amd64}
+sock=${XDG_RUNTIME_DIR:-/tmp}/appdir-$(id -u)-$name.sock
+mnt=${APPDIR_MNT:-$HOME/uitree/$name}
+
+mkdir -p "$dir/.appdir" "$mnt"
+cp "$here/runner.rc" "$dir/.appdir/runner.rc"
+# A mount left by a crash.
+if mountpoint -q "$mnt"; then 9umount "$mnt" 2>/dev/null || true; fi
+rm -f "$sock"
+
+cd "$dir"
+"$uitree_bin" -a "unix!$sock" -t "$name" rc .appdir/runner.rc &
+pid=$!
+trap 'kill $pid 2>/dev/null || true' INT TERM HUP
+
+# Mount once the socket is there.
+while [ ! -S "$sock" ] && kill -0 $pid 2>/dev/null; do sleep 0.1; done
+if [ -S "$sock" ] && 9mount "unix!$sock" "$mnt"; then
+	echo "appdir: live \$ui at $mnt" >&2
+else
+	echo "appdir: no mount (the app runs without one)" >&2
+fi
+
+st=0
+wait $pid || st=$?
+# After a signal, wait returns before uitree has gone: wait again.
+while kill -0 $pid 2>/dev/null; do sleep 0.1; done
+if mountpoint -q "$mnt"; then 9umount "$mnt" 2>/dev/null || true; fi
+rm -f "$sock"
+exit $st

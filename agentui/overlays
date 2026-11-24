@@ -1,0 +1,37 @@
+dialog settings  overlay-closable  keyboard  title=Settings  description='Your profile and app preferences'  width=520
+  form f  labels=side  label-width=150
+    field name  label='Display name'
+      input in  value='Darren Shepherd'  tag=set:name
+    field email  label=Email
+      input in  value=darren@example.com  tag=set:email
+    field theme  label=Theme
+      select in  value=dark  tag=set:theme  items=<<END
+dark Dark
+light Light
+END
+    field font  label='Terminal font size'
+      select in  value=13  tag=set:font  items=<<END
+12 12
+13 13
+14 14
+15 15
+END
+    field notify  label=Notifications
+      switch in  value=on  label='Tell me when a session needs me'  tag=set:notify
+  div actions  : h-flex justify-end pt=8
+    button done  primary  label=Done  tag=settings:done
+popover usermenu  anchor=nav/footer/profile  placement=top-start  : w=240 p=4 v-flex gap=2
+  text email  text=darren@example.com  : text-xs text-color=muted-foreground px=8 py=6
+  div settings  tag=menu:settings  on=click  : h-flex items-center gap=10 px=8 py=6 rounded-md cursor-pointer hover:bg=accent text-sm
+    icon i  name=settings  : text-color=muted-foreground
+    text t  text=Settings
+  div keys  tag=menu:keys  on=click  : h-flex items-center gap=10 px=8 py=6 rounded-md cursor-pointer hover:bg=accent text-sm
+    icon i  name=keyboard  : text-color=muted-foreground
+    text t  text='Keyboard shortcuts'
+  div help  tag=menu:help  on=click  : h-flex items-center gap=10 px=8 py=6 rounded-md cursor-pointer hover:bg=accent text-sm
+    icon i  name=circle-question-mark  : text-color=muted-foreground
+    text t  text='Get help'
+  div sep  : h=1 my=4 bg=border
+  div logout  tag=menu:logout  on=click  : h-flex items-center gap=10 px=8 py=6 rounded-md cursor-pointer hover:bg=accent text-sm
+    icon i  name=log-out  : text-color=muted-foreground
+    text t  text='Log out'

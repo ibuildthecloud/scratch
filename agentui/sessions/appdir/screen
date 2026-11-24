@@ -1,0 +1,28 @@
+{user|> make appdir save the tree back to the directory whenever it changes }
+
+{w|●} I'll watch {c|$ui/trace} for applied writes and debounce the saves.
+
+{g|●} {b|Read}(proto/appdir/appdir)
+  {d|⎿  Read 131 lines}
+
+{g|●} {b|Update}(proto/appdir/appdir)
+  {d|⎿  Updated proto/appdir/appdir with 14 additions}
+      {d|74}  {add|+save() {{                                                    }
+      {d|75}  {add|+    cat "$win/tree" >"$dir/.tree.new" || return            }
+      {d|76}  {add|+    cmp -s "$dir/.tree.new" "$dir/tree" && return          }
+      {d|77}  {add|+    mv "$dir/.tree.new" "$dir/tree"                        }
+      {d|78}  {add|+}}                                                          }
+
+{w|●} Now I'll start the counter example to check the save path end to end.
+
+@box 92 y
+{y,b|Bash command}
+
+  {w|cd proto/appdir && DISPLAY=:0 ./appdir examples/counter}
+  {d|Run the counter example in a window}
+
+{w|Do you want to proceed?}
+{sel,c|❯}{sel| 1. Yes                                                                                    }
+  2. Yes, and don't ask again for {b|./appdir} commands in ~/src/uitree
+  3. No, and tell Claude what to do differently {d|(esc)}
+@end

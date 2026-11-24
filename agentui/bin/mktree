@@ -1,0 +1,27 @@
+#!/bin/sh
+# mktree: write the starting tree from sessions/ (the sidebar, grouped by
+# project) to stdout. appdir saves the live tree back over `tree`, so run
+# this only to start over:  bin/mktree > tree && rm -f current
+cd "$(dirname "$0")/.."
+badge() { case $1 in running) echo running ;; waiting) echo 'needs you' ;; done) echo done ;; *) echo '' ;; esac; }
+cat <<'END'
+div root  : h-flex items-stretch size-full bg=background
+  sidebar nav  collapsible=off  : w=260 flex-shrink-0
+END
+for p in $(cat sessions/*/project | sort -u); do
+	echo "    sidebar-group $p  label=$p"
+	for d in sessions/*/; do
+		s=$(basename "$d")
+		[ "$(cat "$d/project")" = "$p" ] || continue
+		b=$(badge "$(cat "$d/status")")
+		echo "      sidebar-item $s  label='$(sed "s/'/''/g" "$d/title")'  icon=terminal${b:+  badge='$b'}"
+	done
+done
+cat <<'END'
+  div main  : v-flex flex-1 min-w=0 bg=#1a1a1a
+    div bar  : h-flex items-center gap=10 h=38 px=16 flex-shrink-0 bg=#232323 border-b-1 border-color=#2f2f2f
+      text title  text='No session'  : text-sm font-medium text-color=#e6e6e6
+      text cwd  : text-xs text-color=#7f848e
+    scroll term  : flex-1 overflow-y-scroll overflow-x-scroll px=18 py=14
+      styled-text screen  text='Select a session on the left.'  : font-family=Hack text-size=13 line-height=19 text-color=#d4d4d4 whitespace-nowrap
+END

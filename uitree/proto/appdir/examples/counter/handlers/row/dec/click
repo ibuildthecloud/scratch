@@ -1,0 +1,5 @@
+#!/bin/rc
+# - : one less. State lives in the tree; history.log is the app's own file.
+n=`{awk '{ print $1 - 1 }' $win/row/n/text}
+echo `{date} dec '->' $n >>history.log
+echo set row/n text'='$n

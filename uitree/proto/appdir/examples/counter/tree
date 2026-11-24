@@ -1,0 +1,10 @@
+div root  : v-flex size-full items-center justify-center gap=16 bg=background
+  div row  : h-flex items-center gap=20
+    div dec  on=click  : size=40 flex items-center justify-center rounded-full border-1 border-color=border text-xl cursor-pointer hover:bg=accent active:bg=muted
+      text t  text=−
+    text n  text=3  : text-3xl font-semibold w=72 text-center
+    div inc  on=click  : size=40 flex items-center justify-center rounded-full border-1 border-color=border text-xl cursor-pointer hover:bg=accent active:bg=muted
+      text t  text=+
+  button reset  label=Reset
+  input note  placeholder='A note (saved with the tree)'  value='remember the milk'  : w=240
+  text hint  text='added by hand through the mount'  : text-sm text-color=muted-foreground

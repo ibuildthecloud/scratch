@@ -1,0 +1,21 @@
+#!/bin/rc
+# Settings dialog fields. Each tag is set:WHAT. Text values are read from
+# the field's value file ($node/value): event attributes are one word.
+fn q { sed 's/''/''''/g; s/^/''/; s/$/''/' }
+v=`''{awk 'NR==1 { printf "%s", $0 }' $node/value}
+switch($2) {
+case set:name
+	n=`''{echo -n $v | q}
+	echo 'set nav/footer/profile/who/name text='^$n
+	echo 'set nav/footer/profile/pfp name='^$n
+case set:email
+	echo 'set over/usermenu/email text='^`''{echo -n $v | q}
+case set:theme
+	# Outside the tree: write $ui and keep a copy in ui/ for the next start.
+	echo $v >$ui/theme/mode
+	echo $v >ui/theme/mode
+case set:font
+	echo 'set main/term/screen : font-family=Hack text-size='^$v^' line-height='^`{echo $v | awk '{print int($1*1.45+.5)}'}^' text-color=#d4d4d4 whitespace-nowrap'
+case set:notify
+	echo $v >prefs/notify
+}

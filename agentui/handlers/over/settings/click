@@ -1,0 +1,4 @@
+#!/bin/rc
+# The settings dialog's Done button.
+if(~ $2 settings:done)
+	echo close >$win/over/settings/ctl

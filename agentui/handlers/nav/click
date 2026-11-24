@@ -1,0 +1,9 @@
+#!/bin/rc
+# Clicks in the sidebar bubble here. Sessions are nav/PROJECT/SESSION;
+# the footer (nav/footer/...) is not a session.
+switch($3) {
+case nav/footer/*
+	;
+case nav/*/*
+	exec bin/show `{basename $3}
+}

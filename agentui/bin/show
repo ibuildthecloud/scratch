@@ -1,0 +1,27 @@
+#!/bin/rc
+# show SESSION: print the ctl lines that put SESSION in the terminal pane:
+# the title bar, the screen (sessions/SESSION/screen.text and .runs, made
+# by bin/render on the host), and the sidebar's active item. Runs in h9,
+# in the app directory.
+s=$1
+d=sessions/$s
+if(! test -d $d) {
+	echo show: no session $s >[1=2]
+	exit nosession
+}
+# q FILE: the file's first line as a quoted ctl value
+fn q { sed 1q $1 | sed 's/''/''''/g; s/^/''/; s/$/''/' }
+echo 'set main/bar/title text='^`''{q $d/title}
+echo 'set main/bar/cwd text='^`''{q $d/cwd}
+echo 'set main/term/screen text=<<ENDTEXT runs=<<ENDRUNS'
+cat $d/screen.text
+echo ENDTEXT
+cat $d/screen.runs
+echo ENDRUNS
+# Clear every item, not just the last one shown: the tree is the truth.
+for(o in `{cd sessions && ls}) {
+	if(! ~ $o $s)
+		echo set nav/^`{cat sessions/$o/project}^/^$o active'='off
+}
+echo set nav/^`{cat $d/project}^/^$s active'='on
+echo $s >current

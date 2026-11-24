@@ -1,0 +1,32 @@
+{user|> lay out the sidebar: sessions grouped by project, a badge for status }
+
+{w|●} I'll use the {c|sidebar} component with one {c|sidebar-group} per project.
+
+{g|●} {b|Write}(tree)
+  {d|⎿  Wrote 24 lines to tree}
+
+{g|●} {b|Write}(handlers/nav/click)
+  {d|⎿  Wrote 6 lines to handlers/nav/click}
+      {d|1} #!/bin/sh
+      {d|2} {d|# A click anywhere in the sidebar bubbles here.}
+      {d|3} case $3 in
+      {d|4} nav/*/*) exec bin/show "${{3##*/}" ;;
+      {d|5} esac
+
+{g|●} {b|Bash}(./appdir ~/src/agentui)
+  {d|⎿  appdir: mounted at /mnt/uitree/agentui}
+     {d|appdir: ready}
+
+{w|●} Done. Clicking a session in the sidebar now runs {c|bin/show}, which
+  writes the session's screen into the terminal pane and moves the
+  {c|active} flag. The tree is saved back after each click, so the app
+  reopens on the session you left it on.
+
+  {g|✓} sessions grouped by project
+  {g|✓} status badges
+  {g|✓} selection survives a restart
+
+@box 92 d
+{w|>} 
+@end
+  {d|? for shortcuts}                                         {d|Context left until auto-compact: 61%}

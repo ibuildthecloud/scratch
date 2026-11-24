@@ -1,0 +1,147 @@
+#!/bin/rc
+# runner.rc: the appdir runner, inside h9. Started by appdir as the
+# app itself (uitree rc .appdir/runner.rc), in the app directory, with
+# $ui mounted by h9. Everything runs in the machine: no host mount, no
+# sudo, and handlers are rc/awk/sed programs.
+#
+# The app directory:
+#	tree        the main window's tree: loaded, and saved back when it changes
+#	overlays    its popovers, dialogs and sheets (win/main/over/tree): the same
+#	window      ctl lines for the window at start
+#	ui/...      files written to the same path under $ui at start
+#	handlers/   handlers/PATH/EVENT, bubbling up the node's path
+#
+# A handler is run as `handler EVENT KEY PATH` with the event line on
+# stdin, $ui, $win, $node and each attribute as $ev_NAME in its
+# environment; what it prints is written to the window's ctl in one go.
+# Handlers run one at a time, in order. Their stderr goes to .appdir.log.
+
+rfork e
+win=$ui/win/main
+mkdir -p .appdir
+log=.appdir.log
+echo -n >$log
+fn say { echo appdir: $* | tee -a $log >[1=2] }
+
+# Load. Window settings and $ui files first, then the tree.
+if(test -f window)
+	grep -v '^[ 	]*(#|$)' window >$win/ctl
+if(test -d ui) {
+	for(f in `{cd ui && du -a | awk '{print $2}' | sed 's,^\./,,'}) {
+		if(test -f ui/$f)
+			cat ui/$f >$ui/$f || say ui/$f: write failed
+	}
+}
+
+# Two documents: tree is the window's nodes (win/main/tree), and
+# overlays its popovers, dialogs and sheets (win/main/over/tree), which
+# the window's tree doesn't include.
+#
+# A tree write applies when the file is closed, and its error isn't
+# returned to the writer (here or on Linux); it shows only on trace. If
+# either document fails to load, nothing is saved, so the files are kept.
+loaded=1
+cat $ui/trace >.appdir/trace &
+tp=$apid
+if(test -s tree)
+	cat tree >$win/tree
+# over/tree reads as one root per overlay, but a write takes one root:
+# split the file, make each overlay with new, then write its own tree.
+# Here-value bodies (items=<<END) are unindented, so a root starts only
+# at an unindented line outside one.
+if(test -s overlays) {
+	rm -rf .appdir/over
+	mkdir -p .appdir/over
+	awk '
+	end != "" { print > f; if ($0 == end) end = ""; next }
+	/^[^ \t]/ { f = ".appdir/over/" $2; print $1 > (f ".type") ; close(f ".type") }
+	{ print > f; if (match($0, /=<<[A-Za-z0-9_]+/)) end = substr($0, RSTART + 3, RLENGTH - 3) }
+	' overlays
+	for(t in .appdir/over/*.type) {
+		n=`{basename $t .type}
+		echo new `{cat $t} over/$n >$win/ctl
+		cat .appdir/over/$n >$win/over/$n/tree
+	}
+}
+sleep 1
+echo kill >/proc/$tp/note
+if(grep -s '^error path=win/main/(over/)?tree ' .appdir/trace) {
+	loaded=0
+	grep '^error path=win/main/(over/)?tree ' .appdir/trace >>$log
+	say 'load failed (error above); not saving, so tree and overlays are kept as they are'
+}
+rm -f .appdir/trace
+
+# Save: once a second, write each document back if the window's differs.
+# save FILE SOURCE
+fn save {
+	cat $2 >.appdir/$1.new >[2]/dev/null
+	if(cmp -s .appdir/$1.new $1)
+		rm -f .appdir/$1.new
+	if not {
+		mv .appdir/$1.new $1
+		say saved $1
+	}
+}
+if(~ $loaded 1) {
+	{ while() { sleep 1; save tree $win/tree; save overlays $win/over/tree } } &
+	saver=$apid
+}
+
+# Dispatch.
+fn handler_for {
+	# $1 path, $2 event: candidates from the node up to the root.
+	h=()
+	for(c in `{echo $1 | awk -v 'e='^$2 '{
+		n = split($0, a, "/")
+		for(i = n; i >= 1; i--) {
+			s = a[1]
+			for(j = 2; j <= i; j++) s = s "/" a[j]
+			print "handlers/" s "/" e
+		}
+		print "handlers/" e
+	}'}) {
+		if(~ $#h 0 && test -f $c && test -x $c)
+			h=$c
+	}
+}
+
+say ready
+cat $win/events | while(ev=`{read}) {
+	switch($ev(1)) {
+	case resync lost
+		;
+	case gone
+		# rc has no break; the loop is its own process (the pipe's
+		# right side), so exit ends just the loop.
+		exit
+	case *
+		handler_for $ev(3) $ev(1)
+		if(! ~ $#h 0) {
+			echo $ev ' -> '^$h >>$log
+			@{
+				rfork e
+				node=$win/$ev(3)
+				for(a in $ev) {
+					if(~ $a *'='*) {
+						n=`{echo $a | sed 's/=.*//; s/-/_/g'}
+						# `{} splits (and drops sed's trailing newline);
+						# $"v joins the words back with single spaces.
+						v=`{echo $a | sed 's/^[^=]*=//; s/^''//; s/''$//'}
+						echo -n $"v >/env/ev_$n
+					}
+				}
+				echo $ev | $h $ev(1) $ev(2) $ev(3) >.appdir/out >>[2]$log
+			}
+			# One write for the whole output: the core applies each 9P
+			# write to a ctl as it arrives, so a here-value split across
+			# writes fails (cat writes up to 8 KB at a time here).
+			if(test -s .appdir/out)
+				cat .appdir/out >$win/ctl
+			rm -f .appdir/out
+		}
+	}
+}
+if(! ~ $#saver 0)
+	echo kill >/proc/$saver/note
+say stopped

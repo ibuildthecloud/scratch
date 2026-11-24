@@ -1,0 +1,118 @@
+#!/usr/bin/env python3
+"""render [SESSION...]: turn sessions/*/screen (markup) into screen.text and
+screen.runs, the styled-text value and its runs, for bin/show to send.
+
+A host-side dev tool: run it after editing a screen. bin/show runs in h9,
+where awk counts characters, not the bytes `runs` needs.
+
+Run from the app directory (appdir runs handlers there). Reads
+sessions/SESSION/{title,cwd,project,screen} and the file `current` (the
+session shown now), writes `current`, and prints ctl lines for the main
+window: the title bar, the screen as styled-text (text + runs), and the
+sidebar's active item.
+
+The screen is a fake terminal: plain text in a monospace font, with
+markup for color:
+
+    {o|text}        a span with style o (see STYLES); keys combine: {o,b|x}
+    {{ and }}       literal braces
+    @box W [STYLE]  start a box W columns wide inside; lines up to @end are
+    @end            padded to W, so the borders line up
+"""
+import os
+import re
+import sys
+
+STYLES = {
+    "o": "text-color=#d97757",            # Claude orange
+    "d": "text-color=#7f848e",            # dim
+    "g": "text-color=#4eba65",            # green
+    "r": "text-color=#ff6b80",            # red
+    "y": "text-color=#e5c07b",            # yellow
+    "c": "text-color=#61afef",            # blue
+    "m": "text-color=#c678dd",            # magenta
+    "w": "text-color=#ffffff",            # bright
+    "b": "font-bold",
+    "i": "italic",
+    "add": "bg=#1f3d27 text-color=#b8e6c1",  # diff: added line
+    "del": "bg=#4a2127 text-color=#f2b8c0",  # diff: removed line
+    "sel": "bg=#2c313a",                  # selected row
+    "user": "bg=#2a2a2a text-color=#e6e6e6",  # the user's prompt line
+}
+
+SPAN = re.compile(r"\{\{|\}\}|\{([a-z,]+)\|((?:[^{}]|\{\{|\}\})*)\}")
+
+
+def parse_line(src):
+    """Markup -> (plain text, [(char_start, char_len, style)])."""
+    out, runs, pos = [], [], 0
+    for m in SPAN.finditer(src):
+        out.append(src[pos:m.start()])
+        if m.group(0) == "{{":
+            out.append("{")
+        elif m.group(0) == "}}":
+            out.append("}")
+        else:
+            body = m.group(2).replace("{{", "{").replace("}}", "}")
+            style = " ".join(STYLES[k] for k in m.group(1).split(","))
+            runs.append((len("".join(out)), len(body), style))
+            out.append(body)
+        pos = m.end()
+    out.append(src[pos:])
+    return "".join(out), runs
+
+
+def render(screen):
+    lines, runs = [], []  # runs: (line index, char start, char len, style)
+    box = None
+    for raw in screen.split("\n"):
+        if raw.startswith("@box"):
+            parts = raw.split()
+            box = (int(parts[1]), parts[2] if len(parts) > 2 else "d")
+            text = "╭" + "─" * (box[0] + 2) + "╮"
+            lines.append(text)
+            runs.append((len(lines) - 1, 0, len(text), STYLES[box[1]]))
+            continue
+        if raw.startswith("@end") and box:
+            text = "╰" + "─" * (box[0] + 2) + "╯"
+            lines.append(text)
+            runs.append((len(lines) - 1, 0, len(text), STYLES[box[1]]))
+            box = None
+            continue
+        text, r = parse_line(raw)
+        if box:
+            text = "│ " + text + " " * max(0, box[0] - len(text)) + " │"
+            r = [(s + 2, n, st) for s, n, st in r]
+            r += [(0, 1, STYLES[box[1]]), (len(text) - 1, 1, STYLES[box[1]])]
+        lines.append(text)
+        runs += [(len(lines) - 1, s, n, st) for s, n, st in r]
+
+    # Char offsets per line -> byte offsets into the whole text.
+    text = "\n".join(lines)
+    starts, b = [], 0
+    for ln in lines:
+        starts.append(b)
+        b += len(ln.encode()) + 1
+    out = []
+    for li, s, n, st in sorted(runs, key=lambda r: (r[0], r[1])):
+        ln = lines[li]
+        bs = starts[li] + len(ln[:s].encode())
+        out.append(f"{bs} {len(ln[s:s + n].encode())} {st}")
+    return text, "\n".join(out)
+
+
+def main():
+    ids = sys.argv[1:] or sorted(os.listdir("sessions"))
+    for sid in ids:
+        d = os.path.join("sessions", sid)
+        with open(os.path.join(d, "screen")) as f:
+            text, runs = render(f.read().strip("\n"))
+        with open(os.path.join(d, "screen.text"), "w") as f:
+            f.write(text + "\n")
+        with open(os.path.join(d, "screen.runs"), "w") as f:
+            f.write(runs + "\n")
+        print(f"rendered {sid}")
+
+
+if __name__ == "__main__":
+    main()

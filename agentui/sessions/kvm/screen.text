@@ -1,0 +1,19 @@
+╭────────────────────────────────────────────────────────────╮
+│ ✻ Welcome to Claude Code!                                  │
+│                                                            │
+│   /help for help, /status for your current setup           │
+│                                                            │
+│   cwd: ~/src/hyper9                                        │
+╰────────────────────────────────────────────────────────────╯
+
+ Tips for getting started:
+
+ 1. Ask Claude to create a new app or clone a repository
+ 2. Use Claude to help with file analysis, editing, bash commands and git
+ 3. Be as specific as you would with another engineer for the best results
+ 4. ✓ Run /init to create a CLAUDE.md file with instructions for Claude
+
+╭──────────────────────────────────────────────────────────────────────────────────────────────╮
+│ > Try "how does the native backend differ from KVM?"                                         │
+╰──────────────────────────────────────────────────────────────────────────────────────────────╯
+  ? for shortcuts

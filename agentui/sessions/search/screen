@@ -1,0 +1,29 @@
+{user|> add full-text search to the docs site }
+
+{w|●} I'll index the markdown at build time and search it in the browser.
+
+{g|●} {b|Search}(pattern: "**/*.md", path: "web/docs")
+  {d|⎿  Found 48 files}
+
+{g|●} {b|Write}(web/scripts/build-index.mjs)
+  {d|⎿  Wrote 64 lines to web/scripts/build-index.mjs}
+
+{g|●} {b|Bash}(node web/scripts/build-index.mjs)
+  {d|⎿  indexed 48 pages, 1,912 sections → web/public/search.json (212 KB)}
+
+{w|●} The index is 212 KB, a bit heavy for first load. I'll split it by
+  section and load the rest on first query.
+
+{m|●} {b|Update Todos}
+  {d|⎿}  {g|☒} Index markdown at build time
+     {g|☒} Generate search.json
+     {o|☐} {b|Split the index by section}
+     ☐ Search box component
+     ☐ Keyboard shortcut ({c|/}) to focus search
+
+{o|✢ Indexing…} {d|(1m 12s · ↑ 4.1k tokens · esc to interrupt)}
+
+@box 92 d
+{w|>} 
+@end
+  {d|? for shortcuts}

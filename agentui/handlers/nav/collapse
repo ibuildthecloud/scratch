@@ -1,0 +1,14 @@
+#!/bin/rc
+# The sidebar's toggle sends collapse with value=on|off. Collapsed, the
+# rail is icon-wide: the footer button keeps only its icon and the
+# summary hides.
+if(~ $ev_value on) {
+	echo 'set nav/footer/new label= : w-full'
+	echo 'set nav/footer/sum : hidden'
+	echo 'set nav/footer : v-flex items-center gap=8 py=4'
+}
+if not {
+	echo 'set nav/footer/new label=''New session'' : w-full'
+	echo 'set nav/footer/sum : text-xs text-color=muted-foreground px=2'
+	echo 'set nav/footer : v-flex gap=8 p=4 w-full'
+}

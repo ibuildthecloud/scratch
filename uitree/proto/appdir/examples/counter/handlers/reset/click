@@ -1,0 +1,3 @@
+#!/bin/rc
+echo `{date} reset >>history.log
+echo set row/n text'='0
