@@ -989,3 +989,50 @@ bytes 13116
 snapshots 1 last_bytes=3903 last_us=27
 pump_us n=203 p50=41.0 p90=52.0 max=532.0
 encode_us n=203 p50=4.0 p90=5.0 max=90.0
+
+== ONLY='1 2 3 4 4m' ./run.sh 50, at 7e13206 (window brought to the front), H9ROOT=uitree/third_party/hyper9/.local/9front/root
+# Row 4 runs now, and 4m matches it, so the keys and menu writes aren't the stall.
+# The trailing 'exit 1' is run.sh's status before 86de1e2 fixed it.
+== build
+warning: built-in root: no slim-11952-arm64 in /private/tmp/scratch/uitree/third_party/hyper9/.local/9front, so arm64 gets the skeleton only; zig build slim -Darch=arm64 makes it
+warning: built-in root: no slim-11952-amd64 in /private/tmp/scratch/uitree/third_party/hyper9/.local/9front, so amd64 gets the skeleton only; zig build slim -Darch=amd64 makes it
+warning: built-in root: no slim-11952-386 in /private/tmp/scratch/uitree/third_party/hyper9/.local/9front, so 386 gets the skeleton only; zig build slim -Darch=386 makes it
+/private/tmp/scratch/uitree/core/zig-out/bin/uitree-headless: replacing existing signature
+warning: built-in root: no slim-11952-arm64 in /private/tmp/scratch/uitree/third_party/hyper9/.local/9front, so arm64 gets the skeleton only; zig build slim -Darch=arm64 makes it
+warning: built-in root: no slim-11952-amd64 in /private/tmp/scratch/uitree/third_party/hyper9/.local/9front, so amd64 gets the skeleton only; zig build slim -Darch=amd64 makes it
+warning: built-in root: no slim-11952-386 in /private/tmp/scratch/uitree/third_party/hyper9/.local/9front, so 386 gets the skeleton only; zig build slim -Darch=386 makes it
+/private/tmp/scratch/uitree/core/zig-out/bin/uitree-remote: replacing existing signature
+   Compiling uitcore-sys v0.1.0 (/private/tmp/scratch/uitree/renderer/gpui/crates/uitcore-sys)
+   Compiling uitcore v0.1.0 (/private/tmp/scratch/uitree/renderer/gpui/crates/uitcore)
+   Compiling host v0.1.0 (/private/tmp/scratch/uitree/renderer/gpui/crates/host)
+   Compiling uitree v0.1.0 (/private/tmp/scratch/uitree/renderer/gpui/crates/uitree)
+    Finished `release` profile [optimized] target(s) in 1m 35s
+   Compiling uitcore v0.1.0 (/private/tmp/scratch/uitree/renderer/gpui/crates/uitcore)
+   Compiling host v0.1.0 (/private/tmp/scratch/uitree/renderer/gpui/crates/host)
+    Finished `release` profile [optimized] target(s) in 11.52s
+== 1. native GPUI
+clickbench: native GPUI, 50 clicks, ms from the click handler
+  state  (new text in the renderer's hands)  p50   0.036  p90   0.050  max   0.105
+  render (window render starts)             p50   4.393  p90   7.978  max   8.436
+  frame  (next frame begins: previous shown) p50  14.235  p90  16.382  max  16.721
+== 2. built-in renderer, Go app on the host (9P over a unix socket)
+clickbench: built-in renderer, 50 clicks, ms from the click handler
+  state  (new text in the renderer's hands)  p50   0.415  p90   0.689  max   1.073
+  render (window render starts)             p50   7.790  p90   8.201  max   8.593
+  frame  (next frame begins: previous shown) p50  16.092  p90  16.270  max  16.668
+== 3. built-in renderer, Go app in h9 (GOOS=plan9 GOARCH=amd64)
+clickbench: built-in renderer, 50 clicks, ms from the click handler
+  state  (new text in the renderer's hands)  p50   1.213  p90   1.963  max   4.244
+  render (window render starts)             p50   7.837  p90   8.468  max  10.957
+  frame  (next frame begins: previous shown) p50  16.024  p90  16.646  max  19.203
+== 4. built-in renderer, counter.rc in h9
+clickbench: built-in renderer, 50 clicks, ms from the click handler
+  state  (new text in the renderer's hands)  p50  31.669  p90  34.338  max  36.756
+  render (window render starts)             p50  33.547  p90  41.140  max  41.711
+  frame  (next frame begins: previous shown) p50  41.660  p90  49.456  max  58.163
+== 4m. row 4, counter.rc without keys and menu
+clickbench: built-in renderer, 50 clicks, ms from the click handler
+  state  (new text in the renderer's hands)  p50  31.741  p90  34.164  max  39.392
+  render (window render starts)             p50  33.422  p90  39.432  max  45.366
+  frame  (next frame begins: previous shown) p50  43.777  p90  49.414  max  54.100
+exit 1
